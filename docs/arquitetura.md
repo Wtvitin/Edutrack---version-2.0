@@ -1,71 +1,59 @@
-# Arquitetura prevista — EduTrack AI
+# Arquitetura atual — EduTrack AI
 
-Este documento orienta a próxima etapa. As integrações aqui descritas ainda não estão implementadas.
+## Fronteiras
 
-## Fronteiras do sistema
+Navegador → API Node HTTP → PostgreSQL. O navegador e o agente não recebem conexão de banco. Na instalação local, a API usa PGlite, PostgreSQL embutido no processo servidor; DATABASE_URL seleciona PostgreSQL convencional. Não há Docker.
 
-Web e Mobile usam a mesma API HTTPS. O frontend nunca recebe credenciais de PostgreSQL. O backend autentica o usuário, autoriza cada recurso e aplica regras de negócio. Somente serviços internos autorizados acessam o banco.
+A interface Vinext interna roda em loopback na porta 4174. A entrada é 4173 e encaminha páginas/recursos, mantendo API e frontend na mesma origem. Desenvolvimento também encaminha WebSocket para HMR.
 
-O processamento analítico em Python/Pandas recebe dados autorizados do backend e prepara métricas e resumos estruturados. A IA interpreta esse resumo; não calcula métricas oficiais nem recebe uma conexão de banco. As Tools passam pelo backend, usam o contexto do usuário autenticado e registram ações de forma auditável.
+O banco descrito na planilha foi incorporado com migrações versionadas. Dados de contas não usam o armazenamento local da demonstração.
 
-## Primeira API
+## API disponível
 
-Uma implementação Python/FastAPI é uma opção coerente com a etapa de análise em Pandas. O serviço pode começar como um monólito modular; separar o processamento em um worker quando o volume justificar.
-
-| Grupo | Responsabilidade |
+| Endpoint | Função |
 | --- | --- |
-| `/api/v1/auth/*` | Cadastro, login, logout, confirmação de e-mail e recuperação de senha. |
-| `/api/v1/me` | Perfil, objetivo e preferências do usuário autenticado. |
-| `/api/v1/subjects` | Listar e criar disciplinas. |
-| `/api/v1/subjects/:id` | Ler, atualizar e arquivar disciplina do usuário. |
-| `/api/v1/tasks` | Listar com filtros, criar e paginar tarefas. |
-| `/api/v1/tasks/:id` | Atualizar tarefa e seu status com autorização por proprietário. |
-| `/api/v1/study-sessions` | Registrar sessões e listar histórico. |
-| `/api/v1/analytics/summary` | Retornar métricas determinísticas com período, fuso e versão do cálculo. |
-| `/api/v1/agent/messages` | Conversar com o agente sobre um contexto autorizado e minimizado. |
-| `/api/v1/agent/actions/:id/confirm` | Confirmar uma proposta de ação ainda válida. |
-| `/api/v1/agent/audit` | Consultar o histórico de ações do próprio usuário. |
+| POST /api/auth/register | Cadastro e link de confirmação |
+| POST /api/auth/login | Sessão após confirmação |
+| GET /api/auth/session | Identidade pública da sessão |
+| POST /api/auth/logout | Revogar sessão atual |
+| POST /api/auth/verify | Confirmar token de uso único |
+| POST /api/auth/resend | Solicitar nova confirmação |
+| POST /api/auth/request-reset | Solicitar recuperação |
+| POST /api/auth/reset | Nova senha e revogação de sessões |
+| GET/PUT /api/data | Snapshot autorizado e revisão otimista |
+| GET /api/analytics | Preparação Pandas por período/disciplina |
+| GET /api/history | Até 100 criações/alterações de tarefas |
+| GET /api/notifications | Lembretes de tarefas próximas/atrasadas |
+| POST /api/notifications/read | Leitura dos lembretes |
+| GET /api/dev/mail | SOMENTE caixa de teste local |
 
-URLs ilustram o contrato planejado, não endpoints já disponíveis.
+## Segurança implementada e limitações
 
-## Entidades essenciais
+Senhas com scrypt e salt por senha; cookies HttpOnly/SameSite=Lax, Secure com origem HTTPS; tokens aleatórios armazenados apenas como hash. Confirmação expira em 24h; recuperação em 30 minutos; sessões em 7 dias. Reset revoga sessões anteriores. Operações mutáveis exigem Origin igual a APP_ORIGIN e JSON; cross-site é recusado.
 
-- **User**: id, nome, e-mail verificado, objetivo, fuso, datas de criação e atualização.
-- **Subject**: id, user_id, nome, cor, descrição, archived_at.
-- **Task**: id, user_id, subject_id opcional, título, descrição, prazo opcional, prioridade, status, completed_at e versão para atualização concorrente.
-- **StudySession**: id, user_id, subject_id e task_id opcionais, início, fim, duração validada e origem (cronômetro/manual).
-- **AgentAction**: id, user_id, proposta, parâmetros validados, confirmação, estado, chave de idempotência e expiração.
-- **AuditEvent**: ator, user_id, ação, recurso, resultado, data, request_id e referências da autorização.
+A identidade deriva da sessão. UUIDs existentes pertencentes a outra conta são rejeitados. Relações de disciplina pertencem ao mesmo usuário; revisão de snapshot evita sobrescrever alterações concorrentes. Senhas/e-mails do perfil não podem ser modificados por esse snapshot.
 
-O backend deriva user_id da sessão; não aceita a identidade declarada pelo frontend como autorização. Relações entre tarefa, disciplina e sessão devem pertencer ao mesmo usuário.
+Os limites de autenticação são locais ao processo, por IP e janela de 15 minutos. Para produção: limitador compartilhado, limpeza periódica de tokens/sessões, revisão de segurança, TLS, backups e monitoramento. E-mail SMTP não usa fila de retentativas nesta etapa.
 
-## Regras determinísticas
+A caixa local possui links de acesso às contas de teste e é insegura para compartilhamento. Só funciona em modo de desenvolvimento com origem loopback e transporte local; produção e SMTP a desativam. O servidor vincula-se a loopback.
 
-1. Durações de estudo válidas, sem minutos negativos ou intervalos invertidos.
-2. Critério documentado de arredondamento e tratamento de sessões que atravessam a meia-noite.
-3. Datas de calendário no fuso do usuário; timestamps persistidos com referência UTC.
-4. Tarefas concluídas divididas pelo total do mesmo escopo; denominador zero resulta em zero.
-5. Comparações entre períodos equivalentes; sem porcentagem de crescimento quando a base é zero.
-6. Registros duplicados evitados por idempotência; sessões simultâneas seguem uma regra explícita.
-7. Tempo estudado não é apresentado como medida de aprendizagem ou domínio.
+Histórico atual acompanha criação e alterações de status, prioridade, prazo, título, notas, dificuldade e estimativa. Exclusão física segue CASCADE do dicionário e remove o histórico associado; retenção de auditoria de exclusões exige evolução antes de operações sensíveis/agente.
 
-O frontend desta demonstração calcula apenas métricas locais para permitir a avaliação visual. Na versão conectada, o backend e o processamento analítico passam a ser a fonte dos valores oficiais.
+## Cálculos e privacidade
 
-## Ações do agente
+A API extrai SOMENTE registros da conta autenticada, remove perfil/e-mail/descrições e transmite os campos necessários por stdin a analytics/prepare.py. Python/Pandas devolve JSON; não acessa o banco diretamente.
 
-Fluxo previsto: solicitação → proposta estruturada → validação → autorização/confirmacão → execução transacional → auditoria → resposta.
+Períodos incluem hoje e os N−1 dias anteriores; comparação usa os N dias imediatamente anteriores. Datas seguem America/Sao_Paulo nesta etapa. Duração é armazenada em segundos; interface registra minutos completos. Tarefas concluídas usam completed_at real, não due_date. Canceladas não contam como pendentes. Pendências/atrasos são fotografias atuais, não reconstruções históricas. Estimativas são declaradas pelo usuário. Base anterior zero resulta em ausência de comparação percentual.
 
-Exemplo: criar tarefa exige título válido, disciplina autorizada e prazo normalizado. Uma confirmação deve corresponder aos parâmetros exatos da proposta, ter validade limitada e impedir execução duplicada. O agente nunca recebe uma Tool genérica para executar SQL. Falhas não podem ser apresentadas ao usuário como sucesso.
+O cronômetro continua por timestamps entre páginas e separa armazenamento por conta/dispositivo. Sessões são atribuídas ao dia em que o usuário conclui o cronômetro; não são divididas automaticamente à meia-noite. Estudos manuais usam o dia declarado. Não há deduplicação de sessões simultâneas em diferentes dispositivos ainda.
 
-O contexto enviado ao modelo deve conter somente os registros necessários à solicitação e à identidade autenticada. Retenção, provedor e política de consentimento serão definidos antes da integração. Chaves de API ficam em variáveis de ambiente do backend.
+Nenhuma informação é enviada à IA ou ao Classroom. Fontes Google Fonts são externas; isso é informado no site. A demonstração possui Tool WebMCP estritamente de leitura dos exemplos locais; NÃO opera sobre contas.
 
-## Sequência recomendada
+## Evolução gradual
 
-1. Definir migrações PostgreSQL, configuração local e testes de propriedade dos recursos.
-2. Implementar autenticação, sessões seguras e recuperação por token de uso único com expiração.
-3. Implementar CRUD e sincronização e substituir o armazenamento de demonstração no frontend.
-4. Criar processamento Pandas e endpoint analítico com testes de período, fuso e arredondamento.
-5. Conectar o agente, suas Tools e a auditoria, validando ações negadas e idempotência.
-6. Conectar cliente mobile à mesma API e testar os fluxos completos.
-
-Antes de publicar com dados reais, retirar o modo de demonstração das áreas protegidas e verificar autenticação, autorização entre usuários, recuperação de conta, limites de requisição, exportação e exclusão de dados.
+1. Validar envio Gmail com credenciais configuradas somente pelo usuário no servidor.
+2. Refinar formulários adicionais das disciplinas e operações específicas da API, paginação, importação controlada e fuso editável.
+3. Implementar fila de e-mails/notificações, push autorizado, relatórios salvos e auditoria durável de exclusões.
+4. IA: solicitação → proposta estruturada → validação → confirmação vinculada aos parâmetros → execução idempotente no backend → auditoria → resposta. Nunca SQL genérico para IA.
+5. Classroom: OAuth2 com consentimento e escopos mínimos, mapeamento de atividades externas, deduplicação por IDs externos e controles de sincronização. Não usar a senha de app SMTP para isso.
+6. Publicar com HTTPS, PostgreSQL convencional, execução Python e revisão de segurança/privacidade. Mobile usa a mesma API; um app nativo poderá exigir autenticação adequada ao cliente sem relaxar as regras do navegador.

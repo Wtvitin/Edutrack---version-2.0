@@ -1,62 +1,87 @@
 # EduTrack AI
 
-Primeira versão do frontend para organização acadêmica. Interface em português, responsiva e navegável, com uma demonstração local funcional.
+Aplicativo Web em português para disciplinas, tarefas, sessões de estudo e relatórios. Esta etapa acrescenta contas reais no servidor e mantém a demonstração separada.
 
-## Executar
+## Executar localmente — sem Docker
 
-Pré-requisito: Node.js 22.13 ou superior.
+Requer Node.js 22.13+ e Python com Pandas para os relatórios de contas.
 
 ```sh
 npm ci
-npm run dev
+python -m pip install -r analytics/requirements.txt
 ```
 
-Abra `http://localhost:5173`. O painel é a página inicial; o site de apresentação fica em `/inicio`.
-
-Neste ambiente Windows, caso o atalho `npm` esteja com resolução incorreta, o servidor também pode ser iniciado com `node scripts/run-framework.mjs dev`, depois da instalação das dependências.
+Copie `.env.example` para `.env.local`. Se Python não estiver no PATH, informe o executável em `PYTHON_BIN`.
 
 ```sh
 npm run build
-node node_modules/typescript/bin/tsc --noEmit
-node --test tests/analytics.test.mjs
+npm start
 ```
 
-O servidor usa React 19, TypeScript e Vinext/Vite, com rotas compatíveis com a organização App Router. Os componentes acessíveis são compostos a partir de Radix/Shadcn e os ícones são Lucide. As fontes são DM Sans e Space Grotesk, com fallback local.
+Abra http://localhost:4173. Para desenvolvimento: `npm run dev` no mesmo endereço (a interface interna usa 4174).
 
-## O que já funciona
+Neste computador, `.env.local` já aponta para o Python/Pandas disponível. Se o atalho npm falhar, use `node server/start.mjs` após compilar com `node scripts/run-framework.mjs build`.
 
-- Dashboard com métricas derivadas dos registros da demonstração.
-- Criar, editar, concluir, reabrir, filtrar e remover tarefas, com desfazer na remoção.
-- Cadastro de disciplinas, visualização de detalhes e tarefas relacionadas.
-- Calendário mensal, seleção de dia e criação de tarefa com prazo preenchido.
-- Cronômetro com pausa/continuação, persistente entre páginas, e registro manual de estudos.
-- Progresso por dia e disciplina, edição do perfil e exportação dos dados em JSON.
-- Site de apresentação, primeiros passos, ajuda e informações de privacidade.
-- Telas de login, cadastro, recuperação, nova senha e verificação de e-mail, explicitamente identificadas como prévias.
-- Layout móvel, menu acessível, navegação inferior, foco de teclado e movimento reduzido.
+O banco PostgreSQL embutido roda EXCLUSIVAMENTE no backend, persiste em `.local/postgres` e não exige instalar PostgreSQL ou Docker. Para PostgreSQL convencional, configure `DATABASE_URL`. Não execute duas instâncias sobre a mesma pasta do banco.
 
-## Limites desta entrega
+## Primeiro acesso
 
-Não há conta real, autenticação, envio de e-mail, PostgreSQL, Pandas ou chamada a modelo de IA nesta versão. Nenhum formulário afirma executar essas integrações. A página do agente é uma prévia; seus resumos são calculados localmente, não gerados por IA.
+1. Abra `/cadastro` e crie uma conta de teste.
+2. Com `MAIL_MODE=local`, abra `/emails-locais` e siga o link de confirmação. Nada é enviado externamente.
+3. Entre em `/login`. A confirmação é obrigatória.
+4. Para enviar pelo Gmail, siga [o guia de configuração](docs/configurar-gmail.md). Não coloque sua senha normal do Google no projeto.
+5. A recuperação de senha usa links de 30 minutos, de uso único, e encerra as sessões anteriores.
 
-Os dados são guardados apenas no navegador nas chaves `edutrack-demo-v1` e `edutrack-timer-v1`. Essa persistência serve exclusivamente à demonstração, sem sincronização ou garantia de durabilidade. As senhas dos formulários não são guardadas. Use dados fictícios para testar.
+A caixa local permite usar os links de qualquer conta de teste; não a exponha na rede. O servidor local está vinculado a 127.0.0.1.
 
-## Organização do código
+## Recursos desta etapa
 
-- `app/page.tsx`: entrada do painel.
-- `app/[...slug]/page.tsx`: rotas e validação de caminhos.
-- `components/edutrack/app.tsx`: composição do aplicativo, navegação e estado local.
-- `components/edutrack/views.tsx`: telas de tarefas, disciplinas, calendário, sessões, progresso, perfil e configurações.
-- `components/edutrack/forms.tsx`: formulários e modais.
-- `components/edutrack/public-pages.tsx`: apresentação, acesso e primeiros passos.
-- `app/globals.css`: identidade visual, componentes e adaptação de telas.
-- `lib/edutrack.ts`: tipos, exemplos e cálculos determinísticos da demonstração.
-- `lib/edutrack-schema.ts`: validação do armazenamento local.
-- `docs/arquitetura.md`: fronteiras e sequência da implementação de backend.
-- `tests/analytics.test.mjs`: verificações dos cálculos locais.
+- Autenticação, cadastro, confirmação, reenvio, recuperação, logout e sessões com cookies HttpOnly.
+- Dados separados por conta, validação da API, controle de concorrência e histórico de criação/alteração de tarefas.
+- Menu do usuário, perfil, tema claro/escuro/sistema e preferências persistentes.
+- Tarefas com quatro prioridades, status, dificuldade e estimativa de tempo.
+- Calendário com filtros e marcações por prioridade, sessões registradas no dia e atualização após alterações.
+- Notificações internas, marcação de leitura e controle de preferências. Atualizam ao abrir a área; não são push em segundo plano.
+- Gráficos interativos e relatórios por 7/30/90 dias e disciplina, comparação equivalente, distribuição, pendências, atrasos, carga estimada, CSV e impressão/PDF pelo navegador.
+- Python/Pandas prepara métricas de contas a partir de registros autorizados e minimizados. A demonstração calcula exemplos localmente.
+- Exportação JSON dos registros sem senhas ou tokens.
+- Interface responsiva, navegação acessível e respeito a movimento reduzido.
+- Modelo PostgreSQL com as 12 entidades da planilha: veja [o dicionário incorporado](docs/dicionario-de-dados.md).
 
-Os arquivos de infraestrutura Cloudflare/Sites vieram do starter. D1 e R2 permanecem desativados e não substituem o PostgreSQL previsto para o produto. O projeto ainda não foi publicado.
+## Demonstração e contas
 
-## Próxima etapa
+`/demo` usa exemplos em `edutrack-demo-v1` no navegador. Eles NÃO são importados automaticamente para contas. Para usar sua conta após a demonstração, entre novamente em `/login`. O cronômetro é separado por conta/dispositivo e continua entre páginas. Não é sincronizado entre dispositivos.
 
-Implementar a API e a autenticação conforme `docs/arquitetura.md`. Na versão real, o estado local de demonstração deve ser substituído por chamadas à API autorizadas por usuário. Credenciais e conexões de banco pertencem exclusivamente ao servidor.
+Nas contas, os registros ficam no banco do servidor. Trocar de dispositivo só acessa o mesmo banco se a API estiver disponível naquele dispositivo — localhost aponta para a própria máquina.
+
+A sincronização desta etapa usa um snapshot com revisão otimista; alterações de outra aba geram conflito e não sobrescrevem silenciosamente. Operações futuras do agente usarão endpoints específicos e confirmação, não esse mecanismo de frontend.
+
+## Verificações
+
+```sh
+npm run typecheck
+npm test
+python analytics/test_prepare.py
+npm run build
+```
+
+Os testes cobrem confirmação, links de uso único, isolamento entre usuários, conflitos, histórico, recuperação e cálculos de período. SMTP real depende da configuração e não foi validado com uma conta Gmail.
+
+## Organização
+
+- `server/`: API, banco, autenticação, e-mail, analytics e servidor local.
+- `database/`: migrações derivadas do dicionário e extensões de contas.
+- `analytics/`: preparação determinística em Python/Pandas.
+- `components/edutrack/`: interface, formulários, navegação e comunicação com API.
+- `docs/data-dictionary.json`: transcrição técnica da planilha fornecida.
+- `docs/arquitetura.md`: implementação atual e sequência de evolução.
+
+Credenciais, banco local, logs e arquivos de ambiente não entram no Git. Faça backup de `.local/postgres` com o servidor parado antes de mover a instalação.
+
+## Ainda não conectado
+
+IA real, Tools do agente, Google Classroom, push com app fechado e geração de relatórios em segundo plano. As tabelas previstas existem, mas não representam integrações ativas. Campos adicionais da disciplina (professor/período/carga horária) ainda não têm formulário.
+
+Antes de produção: revisão de segurança, política de dados/consentimento, backups, recuperação, filas confiáveis de e-mail, monitoramento, limites distribuídos e publicação HTTPS. A caixa local é recusada com NODE_ENV=production. O protótipo não deve ser anunciado como pronto para operação pública.
+
+React 19, TypeScript, Vinext/Vite, Radix/Shadcn, Recharts e Lucide. Infraestrutura Cloudflare/Sites herdada do starter não hospeda a nova API Node/Python: a publicação requer uma estratégia própria para esses serviços.

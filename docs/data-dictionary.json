@@ -1,0 +1,1621 @@
+{
+  "source": "Dicionario_de_Dados_EduTrack_AI_Moderno_tecnico.xlsx",
+  "entities": [
+    {
+      "sheet": "01 - User",
+      "table": "users",
+      "description": "Armazena os dados cadastrais e preferências de cada usuário.",
+      "fields": [
+        {
+          "physical": "id",
+          "logical": "id",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "PK",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Identificador único do usuário."
+        },
+        {
+          "physical": "name",
+          "logical": "name",
+          "type": "TEXT",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Nome do usuário."
+        },
+        {
+          "physical": "email",
+          "logical": "email",
+          "type": "TEXT",
+          "nullable": false,
+          "constraint": "UNIQUE",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "E-mail do usuário."
+        },
+        {
+          "physical": "password_hash",
+          "logical": "passwordHash",
+          "type": "TEXT",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Hash seguro da senha."
+        },
+        {
+          "physical": "timezone",
+          "logical": "timezone",
+          "type": "TEXT",
+          "nullable": false,
+          "constraint": "—",
+          "default": "'America/Sao_Paulo'",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Fuso horário utilizado pelo usuário para interpretação de datas e horários."
+        },
+        {
+          "physical": "notifications_enabled",
+          "logical": "notificationsEnabled",
+          "type": "BOOLEAN",
+          "nullable": false,
+          "constraint": "—",
+          "default": "true",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Indica se o usuário aceita notificações automáticas."
+        },
+        {
+          "physical": "created_at",
+          "logical": "createdAt",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "CURRENT_TIMESTAMP",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora de criação do registro."
+        },
+        {
+          "physical": "updated_at",
+          "logical": "updatedAt",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora da última atualização do registro."
+        }
+      ]
+    },
+    {
+      "sheet": "02 - Subject",
+      "table": "subjects",
+      "description": "Armazena as disciplinas pertencentes a um usuário.",
+      "fields": [
+        {
+          "physical": "id",
+          "logical": "id",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "PK",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Identificador único da disciplina."
+        },
+        {
+          "physical": "user_id",
+          "logical": "userId",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "users.id",
+          "onDelete": "Cascade",
+          "description": "Usuário proprietário da disciplina."
+        },
+        {
+          "physical": "name",
+          "logical": "name",
+          "type": "TEXT",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Nome da disciplina."
+        },
+        {
+          "physical": "professor",
+          "logical": "professor",
+          "type": "TEXT",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Nome do professor da disciplina."
+        },
+        {
+          "physical": "workload_hours",
+          "logical": "workloadHours",
+          "type": "DECIMAL(6, 2)",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Carga horária da disciplina em horas."
+        },
+        {
+          "physical": "description",
+          "logical": "description",
+          "type": "TEXT",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Descrição da disciplina."
+        },
+        {
+          "physical": "start_date",
+          "logical": "startDate",
+          "type": "DATE",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data de início da disciplina."
+        },
+        {
+          "physical": "end_date",
+          "logical": "endDate",
+          "type": "DATE",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data de término da disciplina."
+        },
+        {
+          "physical": "archived_at",
+          "logical": "archivedAt",
+          "type": "Timestamptz(6)",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora em que a disciplina foi arquivada; nulo quando ativa."
+        },
+        {
+          "physical": "created_at",
+          "logical": "createdAt",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "CURRENT_TIMESTAMP",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora de criação do registro."
+        },
+        {
+          "physical": "updated_at",
+          "logical": "updatedAt",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora da última atualização do registro."
+        }
+      ]
+    },
+    {
+      "sheet": "03 - AcademicTask",
+      "table": "academic_tasks",
+      "description": "Armazena tarefas acadêmicas e seu estado de acompanhamento.",
+      "fields": [
+        {
+          "physical": "id",
+          "logical": "id",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "PK",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Identificador único da tarefa."
+        },
+        {
+          "physical": "user_id",
+          "logical": "userId",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "users.id",
+          "onDelete": "Cascade",
+          "description": "Usuário proprietário da tarefa."
+        },
+        {
+          "physical": "subject_id",
+          "logical": "subjectId",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "subjects.id",
+          "onDelete": "Cascade",
+          "description": "Disciplina à qual a tarefa pertence."
+        },
+        {
+          "physical": "title",
+          "logical": "title",
+          "type": "TEXT",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Título da tarefa acadêmica."
+        },
+        {
+          "physical": "description",
+          "logical": "description",
+          "type": "TEXT",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Descrição complementar da tarefa."
+        },
+        {
+          "physical": "status",
+          "logical": "status",
+          "type": "ENUM TaskStatus",
+          "nullable": false,
+          "constraint": "—",
+          "default": "'TODO'",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Estado atual da tarefa."
+        },
+        {
+          "physical": "priority",
+          "logical": "priority",
+          "type": "ENUM TaskPriority",
+          "nullable": false,
+          "constraint": "—",
+          "default": "'MEDIUM'",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Nível de prioridade da tarefa."
+        },
+        {
+          "physical": "difficulty",
+          "logical": "difficulty",
+          "type": "ENUM TaskDifficulty",
+          "nullable": false,
+          "constraint": "—",
+          "default": "'MEDIUM'",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Nível de dificuldade da tarefa."
+        },
+        {
+          "physical": "due_date",
+          "logical": "dueDate",
+          "type": "Timestamptz(6)",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Prazo de entrega da tarefa."
+        },
+        {
+          "physical": "estimated_minutes",
+          "logical": "estimatedMinutes",
+          "type": "INTEGER",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Tempo estimado para realização, em minutos."
+        },
+        {
+          "physical": "completed_at",
+          "logical": "completedAt",
+          "type": "Timestamptz(6)",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora em que a tarefa foi concluída."
+        },
+        {
+          "physical": "created_by",
+          "logical": "createdBy",
+          "type": "ENUM TaskCreator",
+          "nullable": false,
+          "constraint": "—",
+          "default": "'USER'",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Origem da criação da tarefa."
+        },
+        {
+          "physical": "agent_execution_id",
+          "logical": "agentExecutionId",
+          "type": "UUID",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "ai_tool_executions.id",
+          "onDelete": "SetNull",
+          "description": "Execução da Tool da IA associada à criação, quando aplicável."
+        },
+        {
+          "physical": "created_at",
+          "logical": "createdAt",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "CURRENT_TIMESTAMP",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora de criação do registro."
+        },
+        {
+          "physical": "updated_at",
+          "logical": "updatedAt",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora da última atualização do registro."
+        }
+      ]
+    },
+    {
+      "sheet": "04 - StudySession",
+      "table": "study_sessions",
+      "description": "Registra sessões de estudo e tempo estudado.",
+      "fields": [
+        {
+          "physical": "id",
+          "logical": "id",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "PK",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Identificador único da sessão de estudo."
+        },
+        {
+          "physical": "user_id",
+          "logical": "userId",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "users.id",
+          "onDelete": "Cascade",
+          "description": "Usuário proprietário da sessão."
+        },
+        {
+          "physical": "subject_id",
+          "logical": "subjectId",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "subjects.id",
+          "onDelete": "Cascade",
+          "description": "Disciplina estudada."
+        },
+        {
+          "physical": "task_id",
+          "logical": "taskId",
+          "type": "UUID",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "academic_tasks.id",
+          "onDelete": "SetNull",
+          "description": "Tarefa relacionada à sessão, quando aplicável."
+        },
+        {
+          "physical": "started_at",
+          "logical": "startedAt",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora de início da sessão."
+        },
+        {
+          "physical": "ended_at",
+          "logical": "endedAt",
+          "type": "Timestamptz(6)",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora de término da sessão."
+        },
+        {
+          "physical": "duration_seconds",
+          "logical": "durationSeconds",
+          "type": "INTEGER",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Duração efetiva da sessão em segundos."
+        },
+        {
+          "physical": "created_at",
+          "logical": "createdAt",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "CURRENT_TIMESTAMP",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora de criação do registro."
+        }
+      ]
+    },
+    {
+      "sheet": "05 - TaskHistory",
+      "table": "task_history",
+      "description": "Registra alterações relevantes realizadas nas tarefas.",
+      "fields": [
+        {
+          "physical": "id",
+          "logical": "id",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "PK",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Identificador único do registro de histórico."
+        },
+        {
+          "physical": "task_id",
+          "logical": "taskId",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "academic_tasks.id",
+          "onDelete": "Cascade",
+          "description": "Tarefa que sofreu a alteração."
+        },
+        {
+          "physical": "user_id",
+          "logical": "userId",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "users.id",
+          "onDelete": "Cascade",
+          "description": "Usuário associado à alteração."
+        },
+        {
+          "physical": "from_status",
+          "logical": "fromStatus",
+          "type": "ENUM TaskStatus",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Status anterior da tarefa."
+        },
+        {
+          "physical": "to_status",
+          "logical": "toStatus",
+          "type": "ENUM TaskStatus",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Novo status da tarefa."
+        },
+        {
+          "physical": "from_priority",
+          "logical": "fromPriority",
+          "type": "ENUM TaskPriority",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Prioridade anterior da tarefa."
+        },
+        {
+          "physical": "to_priority",
+          "logical": "toPriority",
+          "type": "ENUM TaskPriority",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Nova prioridade da tarefa."
+        },
+        {
+          "physical": "from_due_date",
+          "logical": "fromDueDate",
+          "type": "Timestamptz(6)",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Prazo anterior da tarefa."
+        },
+        {
+          "physical": "to_due_date",
+          "logical": "toDueDate",
+          "type": "Timestamptz(6)",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Novo prazo da tarefa."
+        },
+        {
+          "physical": "changed_at",
+          "logical": "changedAt",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "CURRENT_TIMESTAMP",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora em que a alteração foi registrada."
+        }
+      ]
+    },
+    {
+      "sheet": "06 - PushDevice",
+      "table": "push_devices",
+      "description": "Representa dispositivos habilitados para notificações Push.",
+      "fields": [
+        {
+          "physical": "id",
+          "logical": "id",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "PK",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Identificador único do dispositivo."
+        },
+        {
+          "physical": "user_id",
+          "logical": "userId",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "users.id",
+          "onDelete": "Cascade",
+          "description": "Usuário proprietário do dispositivo."
+        },
+        {
+          "physical": "provider",
+          "logical": "provider",
+          "type": "TEXT",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Provedor do serviço de notificações Push."
+        },
+        {
+          "physical": "token",
+          "logical": "token",
+          "type": "TEXT",
+          "nullable": false,
+          "constraint": "UNIQUE",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Token único do dispositivo para Push."
+        },
+        {
+          "physical": "platform",
+          "logical": "platform",
+          "type": "TEXT",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Plataforma do dispositivo."
+        },
+        {
+          "physical": "active",
+          "logical": "active",
+          "type": "BOOLEAN",
+          "nullable": false,
+          "constraint": "—",
+          "default": "true",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Indica se o dispositivo está habilitado para receber notificações."
+        },
+        {
+          "physical": "created_at",
+          "logical": "createdAt",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "CURRENT_TIMESTAMP",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora de criação do registro."
+        },
+        {
+          "physical": "updated_at",
+          "logical": "updatedAt",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora da última atualização do registro."
+        }
+      ]
+    },
+    {
+      "sheet": "07 - NotificationDelivery",
+      "table": "notification_deliveries",
+      "description": "Registra o agendamento e resultado de entregas Push.",
+      "fields": [
+        {
+          "physical": "id",
+          "logical": "id",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "PK",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Identificador único da entrega."
+        },
+        {
+          "physical": "user_id",
+          "logical": "userId",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "users.id",
+          "onDelete": "Cascade",
+          "description": "Usuário destinatário da notificação."
+        },
+        {
+          "physical": "task_id",
+          "logical": "taskId",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "academic_tasks.id",
+          "onDelete": "Cascade",
+          "description": "Tarefa que originou a notificação."
+        },
+        {
+          "physical": "device_id",
+          "logical": "deviceId",
+          "type": "UUID",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "push_devices.id",
+          "onDelete": "SetNull",
+          "description": "Dispositivo utilizado para a entrega, quando disponível."
+        },
+        {
+          "physical": "type",
+          "logical": "type",
+          "type": "ENUM NotificationType",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Tipo da notificação."
+        },
+        {
+          "physical": "status",
+          "logical": "status",
+          "type": "ENUM NotificationStatus",
+          "nullable": false,
+          "constraint": "—",
+          "default": "'PENDING'",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Estado atual da entrega."
+        },
+        {
+          "physical": "scheduled_at",
+          "logical": "scheduledAt",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora programada para envio."
+        },
+        {
+          "physical": "sent_at",
+          "logical": "sentAt",
+          "type": "Timestamptz(6)",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora em que a notificação foi enviada."
+        },
+        {
+          "physical": "error_message",
+          "logical": "errorMessage",
+          "type": "TEXT",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Mensagem do erro ocorrido no envio, quando houver."
+        },
+        {
+          "physical": "created_at",
+          "logical": "createdAt",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "CURRENT_TIMESTAMP",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora de criação do registro."
+        }
+      ]
+    },
+    {
+      "sheet": "08 - AIConversation",
+      "table": "ai_conversations",
+      "description": "Armazena conversas do usuário com o Agente de IA.",
+      "fields": [
+        {
+          "physical": "id",
+          "logical": "id",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "PK",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Identificador único da conversa."
+        },
+        {
+          "physical": "user_id",
+          "logical": "userId",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "users.id",
+          "onDelete": "Cascade",
+          "description": "Usuário proprietário da conversa."
+        },
+        {
+          "physical": "title",
+          "logical": "title",
+          "type": "TEXT",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Título ou identificação amigável da conversa."
+        },
+        {
+          "physical": "created_at",
+          "logical": "createdAt",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "CURRENT_TIMESTAMP",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora de criação da conversa."
+        },
+        {
+          "physical": "updated_at",
+          "logical": "updatedAt",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora da última atualização da conversa."
+        }
+      ]
+    },
+    {
+      "sheet": "09 - AIMessage",
+      "table": "ai_messages",
+      "description": "Armazena as mensagens que compõem uma conversa de IA.",
+      "fields": [
+        {
+          "physical": "id",
+          "logical": "id",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "PK",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Identificador único da mensagem."
+        },
+        {
+          "physical": "conversation_id",
+          "logical": "conversationId",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "ai_conversations.id",
+          "onDelete": "Cascade",
+          "description": "Conversa à qual a mensagem pertence."
+        },
+        {
+          "physical": "role",
+          "logical": "role",
+          "type": "ENUM AIMessageRole",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Papel da mensagem no fluxo de IA."
+        },
+        {
+          "physical": "content",
+          "logical": "content",
+          "type": "TEXT",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Conteúdo textual da mensagem."
+        },
+        {
+          "physical": "created_at",
+          "logical": "createdAt",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "CURRENT_TIMESTAMP",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora de criação da mensagem."
+        }
+      ]
+    },
+    {
+      "sheet": "10 - AIToolExecution",
+      "table": "ai_tool_executions",
+      "description": "Audita as execuções de Tools realizadas pelo Agente de IA.",
+      "fields": [
+        {
+          "physical": "id",
+          "logical": "id",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "PK",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Identificador único da execução da Tool."
+        },
+        {
+          "physical": "user_id",
+          "logical": "userId",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "users.id",
+          "onDelete": "Cascade",
+          "description": "Usuário associado à execução."
+        },
+        {
+          "physical": "conversation_id",
+          "logical": "conversationId",
+          "type": "UUID",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "ai_conversations.id",
+          "onDelete": "SetNull",
+          "description": "Conversa associada à execução, quando aplicável."
+        },
+        {
+          "physical": "intent",
+          "logical": "intent",
+          "type": "TEXT",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Intenção identificada para a execução da ferramenta."
+        },
+        {
+          "physical": "tool_name",
+          "logical": "toolName",
+          "type": "TEXT",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Nome da Tool executada."
+        },
+        {
+          "physical": "input_json",
+          "logical": "inputJson",
+          "type": "JSONB",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Parâmetros de entrada enviados para a Tool."
+        },
+        {
+          "physical": "output_json",
+          "logical": "outputJson",
+          "type": "JSONB",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Resultado produzido pela Tool, quando disponível."
+        },
+        {
+          "physical": "status",
+          "logical": "status",
+          "type": "ENUM AIExecutionStatus",
+          "nullable": false,
+          "constraint": "—",
+          "default": "'PENDING'",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Estado da execução da Tool."
+        },
+        {
+          "physical": "model",
+          "logical": "model",
+          "type": "TEXT",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Modelo de IA utilizado, quando registrado."
+        },
+        {
+          "physical": "prompt_version",
+          "logical": "promptVersion",
+          "type": "TEXT",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Versão do prompt utilizada, quando registrada."
+        },
+        {
+          "physical": "created_at",
+          "logical": "createdAt",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "CURRENT_TIMESTAMP",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora de criação/registro da execução."
+        },
+        {
+          "physical": "completed_at",
+          "logical": "completedAt",
+          "type": "Timestamptz(6)",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora de conclusão da execução."
+        }
+      ]
+    },
+    {
+      "sheet": "11 - Insight",
+      "table": "insights",
+      "description": "Armazena insights e análises personalizadas.",
+      "fields": [
+        {
+          "physical": "id",
+          "logical": "id",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "PK",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Identificador único do insight."
+        },
+        {
+          "physical": "user_id",
+          "logical": "userId",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "users.id",
+          "onDelete": "Cascade",
+          "description": "Usuário ao qual o insight pertence."
+        },
+        {
+          "physical": "type",
+          "logical": "type",
+          "type": "ENUM InsightType",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Tipo de insight gerado."
+        },
+        {
+          "physical": "title",
+          "logical": "title",
+          "type": "TEXT",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Título do insight."
+        },
+        {
+          "physical": "description",
+          "logical": "description",
+          "type": "TEXT",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Descrição do insight."
+        },
+        {
+          "physical": "confidence",
+          "logical": "confidence",
+          "type": "DECIMAL(5, 4)",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Grau de confiança associado ao insight, quando informado."
+        },
+        {
+          "physical": "period_start",
+          "logical": "periodStart",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Início do período analisado."
+        },
+        {
+          "physical": "period_end",
+          "logical": "periodEnd",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Fim do período analisado."
+        },
+        {
+          "physical": "metrics_json",
+          "logical": "metricsJson",
+          "type": "JSONB",
+          "nullable": false,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Métricas estruturadas utilizadas na geração do insight."
+        },
+        {
+          "physical": "dataset_version",
+          "logical": "datasetVersion",
+          "type": "TEXT",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Versão do dataset analítico utilizado."
+        },
+        {
+          "physical": "model",
+          "logical": "model",
+          "type": "TEXT",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Modelo de IA utilizado, quando registrado."
+        },
+        {
+          "physical": "prompt_version",
+          "logical": "promptVersion",
+          "type": "TEXT",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Versão do prompt utilizada, quando registrada."
+        },
+        {
+          "physical": "status",
+          "logical": "status",
+          "type": "ENUM InsightStatus",
+          "nullable": false,
+          "constraint": "—",
+          "default": "'ACTIVE'",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Estado do insight."
+        },
+        {
+          "physical": "created_at",
+          "logical": "createdAt",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "CURRENT_TIMESTAMP",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora de criação do insight."
+        },
+        {
+          "physical": "expires_at",
+          "logical": "expiresAt",
+          "type": "Timestamptz(6)",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora de expiração do insight, quando definida."
+        }
+      ]
+    },
+    {
+      "sheet": "12 - WeeklyReport",
+      "table": "weekly_reports",
+      "description": "Armazena relatórios semanais gerados para o usuário.",
+      "fields": [
+        {
+          "physical": "id",
+          "logical": "id",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "PK",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Identificador único do relatório semanal."
+        },
+        {
+          "physical": "user_id",
+          "logical": "userId",
+          "type": "UUID",
+          "nullable": false,
+          "constraint": "UNIQUE composto",
+          "default": "—",
+          "reference": "users.id",
+          "onDelete": "Cascade",
+          "description": "Usuário proprietário do relatório."
+        },
+        {
+          "physical": "period_start",
+          "logical": "periodStart",
+          "type": "DATE",
+          "nullable": false,
+          "constraint": "UNIQUE composto",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data inicial do período do relatório."
+        },
+        {
+          "physical": "period_end",
+          "logical": "periodEnd",
+          "type": "DATE",
+          "nullable": false,
+          "constraint": "UNIQUE composto",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data final do período do relatório."
+        },
+        {
+          "physical": "status",
+          "logical": "status",
+          "type": "ENUM ReportStatus",
+          "nullable": false,
+          "constraint": "—",
+          "default": "'PENDING'",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Estado do processamento do relatório."
+        },
+        {
+          "physical": "storage_key",
+          "logical": "storageKey",
+          "type": "TEXT",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Chave do arquivo no Object Storage, quando disponível."
+        },
+        {
+          "physical": "file_name",
+          "logical": "fileName",
+          "type": "TEXT",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Nome do arquivo gerado, quando disponível."
+        },
+        {
+          "physical": "generated_at",
+          "logical": "generatedAt",
+          "type": "Timestamptz(6)",
+          "nullable": true,
+          "constraint": "—",
+          "default": "—",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora em que o relatório foi gerado."
+        },
+        {
+          "physical": "created_at",
+          "logical": "createdAt",
+          "type": "Timestamptz(6)",
+          "nullable": false,
+          "constraint": "—",
+          "default": "CURRENT_TIMESTAMP",
+          "reference": "—",
+          "onDelete": "—",
+          "description": "Data e hora de criação do registro."
+        }
+      ]
+    }
+  ],
+  "enums": {
+    "TaskStatus": [
+      "TODO",
+      "IN_PROGRESS",
+      "COMPLETED",
+      "CANCELLED"
+    ],
+    "TaskPriority": [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "URGENT"
+    ],
+    "TaskDifficulty": [
+      "EASY",
+      "MEDIUM",
+      "HARD"
+    ],
+    "TaskCreator": [
+      "USER",
+      "AGENT",
+      "SYSTEM"
+    ],
+    "NotificationType": [
+      "TASK_DUE_24H"
+    ],
+    "NotificationStatus": [
+      "PENDING",
+      "SENT",
+      "FAILED",
+      "CANCELLED"
+    ],
+    "InsightType": [
+      "TREND",
+      "COMPARISON",
+      "ATTENTION",
+      "RECOMMENDATION",
+      "ANOMALY",
+      "SUMMARY"
+    ],
+    "InsightStatus": [
+      "ACTIVE",
+      "EXPIRED",
+      "DISMISSED"
+    ],
+    "AIMessageRole": [
+      "USER",
+      "ASSISTANT",
+      "TOOL",
+      "SYSTEM"
+    ],
+    "AIExecutionStatus": [
+      "PENDING",
+      "SUCCESS",
+      "FAILED",
+      "REJECTED"
+    ],
+    "ReportStatus": [
+      "PENDING",
+      "PROCESSING",
+      "COMPLETED",
+      "FAILED"
+    ]
+  },
+  "relationships": [
+    [
+      "subjects",
+      "user_id",
+      "users",
+      "id",
+      "N:1",
+      "Cascade",
+      "Foreign Key",
+      "subjects.user_id → users.id"
+    ],
+    [
+      "academic_tasks",
+      "user_id",
+      "users",
+      "id",
+      "N:1",
+      "Cascade",
+      "Foreign Key",
+      "academic_tasks.user_id → users.id"
+    ],
+    [
+      "academic_tasks",
+      "subject_id",
+      "subjects",
+      "id",
+      "N:1",
+      "Cascade",
+      "Foreign Key",
+      "academic_tasks.subject_id → subjects.id"
+    ],
+    [
+      "academic_tasks",
+      "agent_execution_id",
+      "ai_tool_executions",
+      "id",
+      "N:1 (opcional)",
+      "SetNull",
+      "Foreign Key",
+      "academic_tasks.agent_execution_id → ai_tool_executions.id"
+    ],
+    [
+      "study_sessions",
+      "user_id",
+      "users",
+      "id",
+      "N:1",
+      "Cascade",
+      "Foreign Key",
+      "study_sessions.user_id → users.id"
+    ],
+    [
+      "study_sessions",
+      "subject_id",
+      "subjects",
+      "id",
+      "N:1",
+      "Cascade",
+      "Foreign Key",
+      "study_sessions.subject_id → subjects.id"
+    ],
+    [
+      "study_sessions",
+      "task_id",
+      "academic_tasks",
+      "id",
+      "N:1 (opcional)",
+      "SetNull",
+      "Foreign Key",
+      "study_sessions.task_id → academic_tasks.id"
+    ],
+    [
+      "task_history",
+      "task_id",
+      "academic_tasks",
+      "id",
+      "N:1",
+      "Cascade",
+      "Foreign Key",
+      "task_history.task_id → academic_tasks.id"
+    ],
+    [
+      "task_history",
+      "user_id",
+      "users",
+      "id",
+      "N:1",
+      "Cascade",
+      "Foreign Key",
+      "task_history.user_id → users.id"
+    ],
+    [
+      "push_devices",
+      "user_id",
+      "users",
+      "id",
+      "N:1",
+      "Cascade",
+      "Foreign Key",
+      "push_devices.user_id → users.id"
+    ],
+    [
+      "notification_deliveries",
+      "user_id",
+      "users",
+      "id",
+      "N:1",
+      "Cascade",
+      "Foreign Key",
+      "notification_deliveries.user_id → users.id"
+    ],
+    [
+      "notification_deliveries",
+      "task_id",
+      "academic_tasks",
+      "id",
+      "N:1",
+      "Cascade",
+      "Foreign Key",
+      "notification_deliveries.task_id → academic_tasks.id"
+    ],
+    [
+      "notification_deliveries",
+      "device_id",
+      "push_devices",
+      "id",
+      "N:1 (opcional)",
+      "SetNull",
+      "Foreign Key",
+      "notification_deliveries.device_id → push_devices.id"
+    ],
+    [
+      "ai_conversations",
+      "user_id",
+      "users",
+      "id",
+      "N:1",
+      "Cascade",
+      "Foreign Key",
+      "ai_conversations.user_id → users.id"
+    ],
+    [
+      "ai_messages",
+      "conversation_id",
+      "ai_conversations",
+      "id",
+      "N:1",
+      "Cascade",
+      "Foreign Key",
+      "ai_messages.conversation_id → ai_conversations.id"
+    ],
+    [
+      "ai_tool_executions",
+      "user_id",
+      "users",
+      "id",
+      "N:1",
+      "Cascade",
+      "Foreign Key",
+      "ai_tool_executions.user_id → users.id"
+    ],
+    [
+      "ai_tool_executions",
+      "conversation_id",
+      "ai_conversations",
+      "id",
+      "N:1 (opcional)",
+      "SetNull",
+      "Foreign Key",
+      "ai_tool_executions.conversation_id → ai_conversations.id"
+    ],
+    [
+      "insights",
+      "user_id",
+      "users",
+      "id",
+      "N:1",
+      "Cascade",
+      "Foreign Key",
+      "insights.user_id → users.id"
+    ],
+    [
+      "weekly_reports",
+      "user_id",
+      "users",
+      "id",
+      "N:1",
+      "Cascade",
+      "Foreign Key",
+      "weekly_reports.user_id → users.id"
+    ]
+  ]
+}

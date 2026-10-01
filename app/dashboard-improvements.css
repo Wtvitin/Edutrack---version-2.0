@@ -1,0 +1,200 @@
+/* Dashboard refinement: one spacing scale and a clear first action on phones. */
+.dashboard-page .dashboard-heading {
+  margin-bottom: 22px;
+}
+
+.dashboard-page .summary-grid {
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.dashboard-page .dashboard-grid {
+  gap: 20px;
+}
+
+.dashboard-page .dashboard-main,
+.dashboard-page .dashboard-aside {
+  gap: 18px;
+}
+
+.dashboard-page .subjects-section {
+  margin-top: 24px;
+}
+
+.mobile-focus-card {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .dashboard-page .dashboard-heading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .dashboard-page .dashboard-heading h1,
+  .dashboard-page .dashboard-heading p {
+    max-width: none;
+  }
+
+  .dashboard-page .dashboard-heading .button {
+    width: 100%;
+  }
+
+  .mobile-focus-card {
+    align-items: center;
+    background: #1c2536;
+    border-radius: 13px;
+    color: #fff;
+    display: flex;
+    gap: 14px;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    min-height: 112px;
+    padding: 17px 18px;
+  }
+
+  .mobile-focus-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+  }
+
+  .mobile-focus-copy > span {
+    align-items: center;
+    color: #c4f576;
+    display: flex;
+    font-size: .7rem;
+    font-weight: 600;
+    gap: 6px;
+    letter-spacing: .7px;
+  }
+
+  .mobile-focus-copy strong {
+    font-size: .95rem;
+    font-weight: 600;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-focus-copy small {
+    color: #b7c2cf;
+    font-size: .75rem;
+  }
+
+  .mobile-focus-action {
+    align-items: center;
+    background: #c4f576;
+    border-radius: 50%;
+    color: #263820;
+    display: flex;
+    flex: 0 0 48px;
+    height: 48px;
+    justify-content: center;
+    position: relative;
+  }
+
+  .mobile-focus-action svg:last-child {
+    bottom: 7px;
+    position: absolute;
+    right: 7px;
+  }
+
+  .mobile-focus-action:hover {
+    background: #d2fa97;
+  }
+
+  .dashboard-page .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .dashboard-page .summary-grid .panel {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-height: 126px;
+    padding: 14px;
+  }
+
+  .dashboard-page .summary-grid .panel:last-child {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr auto;
+    min-height: 85px;
+  }
+
+  .dashboard-page .metric-top {
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    line-height: 1.2;
+  }
+
+  .dashboard-page .metric-period {
+    display: none;
+  }
+
+  .dashboard-page .metric-value {
+    align-self: auto;
+    font-size: 1.55rem;
+    margin: 0;
+    text-align: left;
+  }
+
+  .dashboard-page .metric-caption {
+    font-size: .75rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  .dashboard-page .metric-progress {
+    margin-top: auto;
+  }
+
+  .dashboard-page .summary-grid .panel:last-child .metric-value {
+    align-self: center;
+    text-align: right;
+  }
+
+  .dashboard-page .summary-grid .panel:last-child .metric-caption {
+    grid-column: 1 / -1;
+  }
+
+  .dashboard-page .dashboard-aside {
+    display: block;
+  }
+
+  .dashboard-page .dashboard-aside .focus-card {
+    display: none;
+  }
+
+  .dashboard-page .chart-panel {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 360px) {
+  .dashboard-page .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-page .summary-grid .panel {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    min-height: 85px;
+  }
+
+  .dashboard-page .summary-grid .panel .metric-value {
+    align-self: center;
+    text-align: right;
+  }
+
+  .dashboard-page .summary-grid .panel .metric-caption,
+  .dashboard-page .summary-grid .panel .metric-progress {
+    grid-column: 1 / -1;
+  }
+}

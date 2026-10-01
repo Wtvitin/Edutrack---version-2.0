@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./dashboard-improvements.css";
+import "./account-improvements.css";
+import { ThemeProvider } from "@/components/edutrack/theme";
 
 export const metadata: Metadata = {
   title: "EduTrack AI — Seu espaço de estudos",
@@ -19,8 +22,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
-      <body className="antialiased">{children}</body>
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body className="antialiased"><ThemeProvider>{children}</ThemeProvider></body>
     </html>
   );
 }

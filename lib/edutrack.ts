@@ -1,7 +1,9 @@
 export type Subject = { id: string; name: string; color: string; description: string };
-export type Task = { id: string; title: string; subjectId: string; due: string; done: boolean; priority: "normal" | "alta"; description: string };
+export type Task = { id: string; title: string; subjectId: string; due: string; done: boolean; priority: "baixa" | "normal" | "alta" | "urgente"; description: string; status?: "TODO"|"IN_PROGRESS"|"COMPLETED"|"CANCELLED"; difficulty?: "EASY"|"MEDIUM"|"HARD"; estimatedMinutes?: number|null; completedAt?: string|null };
 export type StudySession = { id: string; subjectId: string; minutes: number; date: string };
-export type StudyData = { version: 1; profile: { name: string; goal: string }; subjects: Subject[]; tasks: Task[]; sessions: StudySession[] };
+export type StudyData = { version: 1; profile: { id?: string; name: string; goal: string; email?: string; notificationsEnabled?: boolean; theme?: "system"|"light"|"dark" }; subjects: Subject[]; tasks: Task[]; sessions: StudySession[] };
+export const priorityLabels={baixa:"Baixa",normal:"Normal",alta:"Alta",urgente:"Urgente"};
+export const priorityRank={baixa:0,normal:1,alta:2,urgente:3};
 export function dateKey(date = new Date()) { return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`; }
 export function shiftedDate(days: number) { const date = new Date(); date.setDate(date.getDate()+days); return dateKey(date); }
 export function seedData(): StudyData { return {

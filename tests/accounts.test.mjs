@@ -1,0 +1,52 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
+import { openDatabase } from '../server/database.mjs';
+import { createAPI } from '../server/api.mjs';
+test('accounts, verification, isolation, audit and password reset',async()=>{
+  const db=await openDatabase({directory:'memory://',url:''});
+  let api;const server=createServer((req,res)=>api(req,res));
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const origin=`http://127.0.0.1:${server.address().port}`;
+  api=createAPI(db,{origin,local:true,mailMode:'local'});
+  let cookie='';
+  const call=async(path,data,method=data?'POST':'GET')=>{const response=await fetch(origin+path,{method,headers:{Origin:origin,'Content-Type':'application/json',Cookie:cookie},body:data?JSON.stringify(data):undefined});return {status:response.status,body:await response.json(),cookie:response.headers.get('set-cookie')?.split(';')[0]};};
+  try{
+    assert.equal((await call('/api/data')).status,401);
+    assert.equal((await call('/api/auth/register',{name:'Teste',email:'tester@example.test',password:'testing-pass-123'})).status,200);
+    assert.equal((await call('/api/auth/login',{email:'tester@example.test',password:'testing-pass-123'})).status,403);
+    const mail=(await call('/api/dev/mail')).body.messages[0];const token=new URL(mail.link).searchParams.get('token');
+    assert.equal((await call('/api/auth/verify',{token})).status,200);
+    assert.equal((await call('/api/auth/verify',{token})).status,400);
+    const login=await call('/api/auth/login',{email:'tester@example.test',password:'testing-pass-123'});assert.equal(login.status,200);cookie=login.cookie;
+    const state=(await call('/api/data')).body;assert.equal(state.data.tasks.length,0);
+    state.data.tasks.push({id:crypto.randomUUID(),title:'Estudar',subjectId:state.data.subjects[0].id,due:'2026-10-03',done:false,priority:'urgente',description:'teste',estimatedMinutes:30});
+    assert.equal((await call('/api/data',state,'PUT')).status,200);
+    assert.equal((await call('/api/data',state,'PUT')).status,409);
+    assert.equal((await call('/api/history')).body.items.length,1);
+    const changed=(await call('/api/data')).body;
+    changed.data.tasks[0].priority='alta';changed.data.tasks[0].due=new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'});
+    changed.data.sessions.push({id:crypto.randomUUID(),subjectId:changed.data.subjects[0].id,date:changed.data.tasks[0].due,minutes:25});
+    assert.equal((await call('/api/data',changed,'PUT')).status,200);
+    const persisted=(await call('/api/data')).body;assert.equal(persisted.data.sessions[0].minutes,25);assert.equal(persisted.data.tasks[0].due,changed.data.tasks[0].due);
+    assert.equal((await call('/api/history')).body.items.length,2);
+    const notices=(await call('/api/notifications')).body.items;assert.equal(notices.length,1);assert.equal((await call('/api/notifications')).body.items.length,1);
+    await call('/api/notifications/read',{id:notices[0].id});assert.ok((await call('/api/notifications')).body.items[0].read_at);
+    persisted.data.tasks[0].done=true;
+    assert.equal((await call('/api/data',persisted,'PUT')).status,200);assert.equal((await call('/api/notifications')).body.items.length,0);
+    const completed=(await call('/api/data')).body;assert.ok(completed.data.tasks[0].completedAt);
+    if(process.env.PYTHON_BIN){const metrics=await call('/api/analytics?days=7');assert.equal(metrics.status,200);assert.equal(metrics.body.minutes,25);assert.equal(metrics.body.completed,1);assert.equal(metrics.body.pending,0);}
+    const invalid=structuredClone(completed);invalid.data.tasks[0].due='2026-02-30';assert.equal((await call('/api/data',invalid,'PUT')).status,400);
+    invalid.data.tasks[0].due='';invalid.data.tasks.push(invalid.data.tasks[0]);assert.equal((await call('/api/data',invalid,'PUT')).status,400);
+    const ownerCookie=cookie;cookie='';await call('/api/auth/register',{name:'Outro',email:'other@example.test',password:'testing-pass-456'});
+    const otherToken=new URL((await call('/api/dev/mail')).body.messages[0].link).searchParams.get('token');await call('/api/auth/verify',{token:otherToken});cookie=(await call('/api/auth/login',{email:'other@example.test',password:'testing-pass-456'})).cookie;
+    const other=(await call('/api/data')).body;assert.equal(other.data.tasks.length,0);other.data.tasks=state.data.tasks;assert.equal((await call('/api/data',other,'PUT')).status,403);
+    cookie=ownerCookie;await call('/api/auth/request-reset',{email:'tester@example.test'});const reset=new URL((await call('/api/dev/mail')).body.messages[0].link).searchParams.get('token');
+    assert.equal((await call('/api/auth/reset',{token:reset,password:'new-testing-pass-123'})).status,200);
+    assert.equal((await call('/api/data')).status,401);
+    assert.equal((await call('/api/auth/login',{email:'tester@example.test',password:'testing-pass-123'})).status,401);
+    assert.equal((await call('/api/auth/login',{email:'tester@example.test',password:'new-testing-pass-123'})).status,200);
+    assert.equal((await call('/api/auth/reset',{token:reset,password:'new-testing-pass-123'})).status,400);
+    const cross=await fetch(origin+'/api/auth/logout',{method:'POST',headers:{Origin:'https://example.test','Content-Type':'application/json'},body:'{}'});assert.equal(cross.status,403);
+  }finally{await new Promise(resolve=>server.close(resolve));await db.close();}
+});
