@@ -20,7 +20,7 @@ npm start
 
 Abra http://localhost:4173. Para desenvolvimento: `npm run dev` no mesmo endereço (a interface interna usa 4174).
 
-Neste computador, `.env.local` já aponta para o Python/Pandas disponível. Se o atalho npm falhar, use `node server/start.mjs` após compilar com `node scripts/run-framework.mjs build`.
+Nesta validação, o pipeline foi executado com Python 3.13/Pandas por meio de `PYTHON_BIN`. Se o Python padrão não tiver as dependências, informe o caminho completo do interpretador em `PYTHON_BIN`. Se o atalho npm falhar, use `node server/start.mjs` após compilar com `node scripts/run-framework.mjs build`.
 
 O banco PostgreSQL embutido roda EXCLUSIVAMENTE no backend, persiste em `.local/postgres` e não exige instalar PostgreSQL ou Docker. Para PostgreSQL convencional, configure `DATABASE_URL`. Não execute duas instâncias sobre a mesma pasta do banco.
 
@@ -54,18 +54,24 @@ A caixa local permite usar os links de qualquer conta de teste; não a exponha n
 
 Nas contas, os registros ficam no banco do servidor. Trocar de dispositivo só acessa o mesmo banco se a API estiver disponível naquele dispositivo — localhost aponta para a própria máquina.
 
-A sincronização desta etapa usa um snapshot com revisão otimista; alterações de outra aba geram conflito e não sobrescrevem silenciosamente. Operações futuras do agente usarão endpoints específicos e confirmação, não esse mecanismo de frontend.
+A sincronização desta etapa usa um snapshot com revisão otimista; alterações de outra aba geram conflito e não sobrescrevem silenciosamente. O Agent usa endpoint próprio, sessão autenticada e Tools com auditoria, não esse mecanismo de snapshot do frontend.
 
 ## Verificações
 
 ```sh
 npm run typecheck
 npm test
-python analytics/test_prepare.py
+python -m unittest discover -s analytics -p "test_*.py"
 npm run build
 ```
 
-Os testes cobrem confirmação, links de uso único, isolamento entre usuários, conflitos, histórico, recuperação e cálculos de período. SMTP real depende da configuração e não foi validado com uma conta Gmail.
+Os testes cobrem confirmação, links de uso único, isolamento entre usuários, conflitos, histórico, recuperação, cálculos de período e Agent mockado. SMTP real depende da configuração e não foi validado com uma conta Gmail.
+
+## Agent de IA
+
+Contas autenticadas podem usar `/agente` para conversar com o Agent por `POST /api/ai/chat`. O backend mantém o Provider server-side, deriva a identidade da sessão HttpOnly, valida as oito Tools registradas, aplica ownership, persiste conversas/mensagens e audita Tool Calls. Configure `LLM_PROVIDER`, `LLM_MODEL`, `LLM_FALLBACK_MODEL`, `LLM_TIMEOUT_MS` e a chave correspondente no `.env.local`; nunca coloque essas chaves no frontend.
+
+O modo `/demo` permanece offline e não envia dados locais a um modelo. O Agent real depende de uma chave OpenRouter ou Google Gemini e do Python/Pandas quando uma Tool de analytics for usada. Rate limiting distribuído, streaming, RAG, filas e E2E dedicado continuam deferred.
 
 ## Organização
 
@@ -80,8 +86,11 @@ Credenciais, banco local, logs e arquivos de ambiente não entram no Git. Faça 
 
 ## Ainda não conectado
 
-IA real, Tools do agente, Google Classroom, push com app fechado e geração de relatórios em segundo plano. As tabelas previstas existem, mas não representam integrações ativas. Campos adicionais da disciplina (professor/período/carga horária) ainda não têm formulário.
+Google Classroom, push com app fechado e geração de relatórios em segundo plano. O Agent de IA e suas Tools estão ativos para contas autenticadas quando o Provider server-side está configurado. Campos adicionais da disciplina (professor/período/carga horária) ainda não têm formulário.
 
 Antes de produção: revisão de segurança, política de dados/consentimento, backups, recuperação, filas confiáveis de e-mail, monitoramento, limites distribuídos e publicação HTTPS. A caixa local é recusada com NODE_ENV=production. O protótipo não deve ser anunciado como pronto para operação pública.
 
 React 19, TypeScript, Vinext/Vite, Radix/Shadcn, Recharts e Lucide. Infraestrutura Cloudflare/Sites herdada do starter não hospeda a nova API Node/Python: a publicação requer uma estratégia própria para esses serviços.
+## Agent e Google Gemini
+
+O Agent usa Google Gemini por default no servidor (`LLM_PROVIDER=google-gemini`, modelo `gemini-2.5-flash`) e lê `GOOGLE_API_KEY` somente do ambiente server-side. OpenRouter não é fallback automático; só é compatibilidade explícita quando `LLM_PROVIDER=openrouter` é configurado. Sem a chave Gemini, o endpoint protegido retorna erro controlado de provider não configurado.

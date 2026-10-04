@@ -1,0 +1,308 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.19.0
+2 info using node@v24.20.0
+3 silly config load:file:C:\Program Files\nodejs\node_modules\npm\npmrc
+4 silly config load:file:C:\Users\Pichau\Downloads\Edutrack---version-2.0\.npmrc
+5 silly config load:file:C:\Users\Pichau\.npmrc
+6 silly config load:file:C:\Users\Pichau\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm install
+8 verbose argv "install" "--cache" ".npm-cache"
+9 verbose logfile logs-max:10 dir:C:\Users\Pichau\Downloads\Edutrack---version-2.0\.npm-cache\_logs\2026-10-01T16_35_02_281Z-
+10 verbose logfile C:\Users\Pichau\Downloads\Edutrack---version-2.0\.npm-cache\_logs\2026-10-01T16_35_02_281Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+13 verbose shrinkwrap failed to load node_modules/.package-lock.json out of date, updated: node_modules
+14 silly idealTree buildDeps
+15 silly reify mark retired [
+15 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\acorn-import-phases'
+15 silly reify ]
+16 silly reify mark retired [
+16 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\ajv-formats'
+16 silly reify ]
+17 silly reify mark retired [
+17 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\ajv'
+17 silly reify ]
+18 silly reify mark retired [
+18 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\chrome-trace-event'
+18 silly reify ]
+19 silly reify mark retired [
+19 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\commander'
+19 silly reify ]
+20 silly reify mark retired [
+20 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\events'
+20 silly reify ]
+21 silly reify mark retired [
+21 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\fast-uri'
+21 silly reify ]
+22 silly reify mark retired [
+22 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\glob-to-regexp'
+22 silly reify ]
+23 silly reify mark retired [
+23 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\jest-worker'
+23 silly reify ]
+24 silly reify mark retired [
+24 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\json-schema-traverse'
+24 silly reify ]
+25 silly reify mark retired [
+25 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\loader-runner'
+25 silly reify ]
+26 silly reify mark retired [
+26 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\merge-stream'
+26 silly reify ]
+27 silly reify mark retired [
+27 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\mime-db'
+27 silly reify ]
+28 silly reify mark retired [
+28 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\require-from-string'
+28 silly reify ]
+29 silly reify mark retired [
+29 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\schema-utils'
+29 silly reify ]
+30 silly reify mark retired [
+30 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\terser',
+30 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.bin\\terser',
+30 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.bin\\terser.cmd',
+30 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.bin\\terser.ps1'
+30 silly reify ]
+31 silly reify mark retired [
+31 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\terser-webpack-plugin'
+31 silly reify ]
+32 silly reify mark retired [
+32 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\watchpack'
+32 silly reify ]
+33 silly reify mark retired [
+33 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\webpack',
+33 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.bin\\webpack',
+33 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.bin\\webpack.cmd',
+33 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.bin\\webpack.ps1'
+33 silly reify ]
+34 silly reify mark retired [
+34 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@jridgewell\\source-map'
+34 silly reify ]
+35 silly reify mark retired [
+35 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@types\\eslint'
+35 silly reify ]
+36 silly reify mark retired [
+36 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@types\\eslint-scope'
+36 silly reify ]
+37 silly reify mark retired [
+37 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\ast'
+37 silly reify ]
+38 silly reify mark retired [
+38 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\floating-point-hex-parser'
+38 silly reify ]
+39 silly reify mark retired [
+39 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\helper-numbers'
+39 silly reify ]
+40 silly reify mark retired [
+40 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\helper-api-error'
+40 silly reify ]
+41 silly reify mark retired [
+41 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\helper-buffer'
+41 silly reify ]
+42 silly reify mark retired [
+42 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\helper-wasm-bytecode'
+42 silly reify ]
+43 silly reify mark retired [
+43 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\ieee754'
+43 silly reify ]
+44 silly reify mark retired [
+44 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\leb128'
+44 silly reify ]
+45 silly reify mark retired [
+45 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\helper-wasm-section'
+45 silly reify ]
+46 silly reify mark retired [
+46 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\utf8'
+46 silly reify ]
+47 silly reify mark retired [
+47 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\wasm-opt'
+47 silly reify ]
+48 silly reify mark retired [
+48 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\wasm-gen'
+48 silly reify ]
+49 silly reify mark retired [
+49 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\wast-printer'
+49 silly reify ]
+50 silly reify mark retired [
+50 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\wasm-edit'
+50 silly reify ]
+51 silly reify mark retired [
+51 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\wasm-parser'
+51 silly reify ]
+52 silly reify mark retired [
+52 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@xtuc\\ieee754'
+52 silly reify ]
+53 silly reify mark retired [
+53 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@xtuc\\long'
+53 silly reify ]
+54 silly reify moves {
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\acorn-import-phases': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.acorn-import-phases-tyiyxvkz',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\ajv-formats': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.ajv-formats-t1imFBQW',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\ajv': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.ajv-WSyWvtuz',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\chrome-trace-event': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.chrome-trace-event-YUWvQbss',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\commander': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.commander-5Bunplcv',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\events': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.events-U1VBDu24',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\fast-uri': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.fast-uri-V38B8VpO',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\glob-to-regexp': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.glob-to-regexp-0R8h6fDg',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\jest-worker': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.jest-worker-JhRQZoeD',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\json-schema-traverse': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.json-schema-traverse-EV8y7hSb',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\loader-runner': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.loader-runner-ZuqoL0A2',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\merge-stream': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.merge-stream-v8HOmgBK',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\mime-db': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.mime-db-UagTF0tf',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\require-from-string': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.require-from-string-1hVQ0Cyl',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\schema-utils': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.schema-utils-QhQYrKd6',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\terser': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.terser-qwmDJNBy',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.bin\\terser': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.bin\\.terser-wgj2f6sJ',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.bin\\terser.cmd': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.bin\\.terser.cmd-bJkUVz7B',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.bin\\terser.ps1': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.bin\\.terser.ps1-6QnrmIOF',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\terser-webpack-plugin': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.terser-webpack-plugin-X3DPK3Sf',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\watchpack': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.watchpack-NYkxtuTG',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\webpack': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.webpack-duwuCGfR',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.bin\\webpack': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.bin\\.webpack-eczWdBO9',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.bin\\webpack.cmd': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.bin\\.webpack.cmd-ftQabDrJ',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.bin\\webpack.ps1': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\.bin\\.webpack.ps1-qLOtpxVq',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@jridgewell\\source-map': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@jridgewell\\.source-map-iRpdKt6s',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@types\\eslint': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@types\\.eslint-Lj6QzjKZ',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@types\\eslint-scope': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@types\\.eslint-scope-Lu3EPWzH',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\ast': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\.ast-CJkjGe1I',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\floating-point-hex-parser': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\.floating-point-hex-parser-vR5UGd8h',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\helper-numbers': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\.helper-numbers-A10C4c8A',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\helper-api-error': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\.helper-api-error-STbwz6bY',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\helper-buffer': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\.helper-buffer-DzFej9fp',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\helper-wasm-bytecode': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\.helper-wasm-bytecode-TzM81GXm',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\ieee754': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\.ieee754-PbrCZnXK',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\leb128': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\.leb128-aOo935mt',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\helper-wasm-section': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\.helper-wasm-section-GPI8AnQy',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\utf8': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\.utf8-aowOGBcP',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\wasm-opt': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\.wasm-opt-CC4N1Bc1',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\wasm-gen': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\.wasm-gen-uBzpnbG6',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\wast-printer': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\.wast-printer-AXBRRZhG',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\wasm-edit': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\.wasm-edit-3e5JGB79',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\wasm-parser': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@webassemblyjs\\.wasm-parser-NMZ02p5W',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@xtuc\\ieee754': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@xtuc\\.ieee754-4mJ1uHcx',
+54 silly reify   'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@xtuc\\long': 'C:\\Users\\Pichau\\Downloads\\Edutrack---version-2.0\\node_modules\\@xtuc\\.long-kkuSi5Cw'
+54 silly reify }
+55 http cache xtend@https://registry.npmjs.org/xtend/-/xtend-4.0.2.tgz 1ms (cache hit)
+56 http cache split2@https://registry.npmjs.org/split2/-/split2-4.2.0.tgz 0ms (cache hit)
+57 http cache postgres-interval@https://registry.npmjs.org/postgres-interval/-/postgres-interval-1.2.0.tgz 0ms (cache hit)
+58 http cache postgres-date@https://registry.npmjs.org/postgres-date/-/postgres-date-1.0.7.tgz 0ms (cache hit)
+59 http cache postgres-bytea@https://registry.npmjs.org/postgres-bytea/-/postgres-bytea-1.0.1.tgz 0ms (cache hit)
+60 http cache pgpass@https://registry.npmjs.org/pgpass/-/pgpass-1.0.5.tgz 0ms (cache hit)
+61 http cache postgres-array@https://registry.npmjs.org/postgres-array/-/postgres-array-2.0.0.tgz 0ms (cache hit)
+62 http cache pg-types@https://registry.npmjs.org/pg-types/-/pg-types-2.2.0.tgz 0ms (cache hit)
+63 http cache pg-pool@https://registry.npmjs.org/pg-pool/-/pg-pool-3.14.0.tgz 0ms (cache hit)
+64 http cache pg-protocol@https://registry.npmjs.org/pg-protocol/-/pg-protocol-1.16.1.tgz 0ms (cache hit)
+65 http cache pg-int8@https://registry.npmjs.org/pg-int8/-/pg-int8-1.0.1.tgz 0ms (cache hit)
+66 http cache pg-connection-string@https://registry.npmjs.org/pg-connection-string/-/pg-connection-string-2.14.1.tgz 0ms (cache hit)
+67 http cache @electric-sql/pglite@https://registry.npmjs.org/@electric-sql/pglite/-/pglite-0.5.8.tgz 0ms (cache hit)
+68 silly tarball no local data for xtend@https://registry.npmjs.org/xtend/-/xtend-4.0.2.tgz. Extracting by manifest.
+69 silly tarball no local data for split2@https://registry.npmjs.org/split2/-/split2-4.2.0.tgz. Extracting by manifest.
+70 http cache nodemailer@https://registry.npmjs.org/nodemailer/-/nodemailer-10.0.13.tgz 0ms (cache hit)
+71 http cache pg-cloudflare@https://registry.npmjs.org/pg-cloudflare/-/pg-cloudflare-1.4.1.tgz 0ms (cache hit)
+72 http cache pg@https://registry.npmjs.org/pg/-/pg-8.23.1.tgz 0ms (cache hit)
+73 silly tarball no local data for postgres-interval@https://registry.npmjs.org/postgres-interval/-/postgres-interval-1.2.0.tgz. Extracting by manifest.
+74 silly tarball no local data for postgres-date@https://registry.npmjs.org/postgres-date/-/postgres-date-1.0.7.tgz. Extracting by manifest.
+75 silly tarball no local data for postgres-bytea@https://registry.npmjs.org/postgres-bytea/-/postgres-bytea-1.0.1.tgz. Extracting by manifest.
+76 silly tarball no local data for pgpass@https://registry.npmjs.org/pgpass/-/pgpass-1.0.5.tgz. Extracting by manifest.
+77 silly tarball no local data for postgres-array@https://registry.npmjs.org/postgres-array/-/postgres-array-2.0.0.tgz. Extracting by manifest.
+78 silly tarball no local data for pg-types@https://registry.npmjs.org/pg-types/-/pg-types-2.2.0.tgz. Extracting by manifest.
+79 silly tarball no local data for pg-pool@https://registry.npmjs.org/pg-pool/-/pg-pool-3.14.0.tgz. Extracting by manifest.
+80 silly tarball no local data for pg-protocol@https://registry.npmjs.org/pg-protocol/-/pg-protocol-1.16.1.tgz. Extracting by manifest.
+81 silly tarball no local data for pg-int8@https://registry.npmjs.org/pg-int8/-/pg-int8-1.0.1.tgz. Extracting by manifest.
+82 silly tarball no local data for pg-connection-string@https://registry.npmjs.org/pg-connection-string/-/pg-connection-string-2.14.1.tgz. Extracting by manifest.
+83 silly tarball no local data for @electric-sql/pglite@https://registry.npmjs.org/@electric-sql/pglite/-/pglite-0.5.8.tgz. Extracting by manifest.
+84 silly tarball no local data for nodemailer@https://registry.npmjs.org/nodemailer/-/nodemailer-10.0.13.tgz. Extracting by manifest.
+85 silly tarball no local data for pg-cloudflare@https://registry.npmjs.org/pg-cloudflare/-/pg-cloudflare-1.4.1.tgz. Extracting by manifest.
+86 silly tarball no local data for pg@https://registry.npmjs.org/pg/-/pg-8.23.1.tgz. Extracting by manifest.
+87 http fetch GET 200 https://registry.npmjs.org/pg-int8/-/pg-int8-1.0.1.tgz 274ms (cache miss)
+88 http fetch GET 200 https://registry.npmjs.org/postgres-bytea/-/postgres-bytea-1.0.1.tgz 285ms (cache miss)
+89 http fetch GET 200 https://registry.npmjs.org/postgres-interval/-/postgres-interval-1.2.0.tgz 292ms (cache miss)
+90 http fetch GET 200 https://registry.npmjs.org/postgres-date/-/postgres-date-1.0.7.tgz 292ms (cache miss)
+91 http fetch GET 200 https://registry.npmjs.org/split2/-/split2-4.2.0.tgz 295ms (cache miss)
+92 http fetch GET 200 https://registry.npmjs.org/postgres-array/-/postgres-array-2.0.0.tgz 293ms (cache miss)
+93 http fetch GET 200 https://registry.npmjs.org/pgpass/-/pgpass-1.0.5.tgz 294ms (cache miss)
+94 http fetch GET 200 https://registry.npmjs.org/pg-connection-string/-/pg-connection-string-2.14.1.tgz 301ms (cache miss)
+95 http fetch GET 200 https://registry.npmjs.org/xtend/-/xtend-4.0.2.tgz 312ms (cache miss)
+96 http fetch GET 200 https://registry.npmjs.org/pg-pool/-/pg-pool-3.14.0.tgz 313ms (cache miss)
+97 http fetch GET 200 https://registry.npmjs.org/pg-cloudflare/-/pg-cloudflare-1.4.1.tgz 310ms (cache miss)
+98 http fetch GET 200 https://registry.npmjs.org/pg-types/-/pg-types-2.2.0.tgz 335ms (cache miss)
+99 http fetch GET 200 https://registry.npmjs.org/pg/-/pg-8.23.1.tgz 355ms (cache miss)
+100 http fetch GET 200 https://registry.npmjs.org/pg-protocol/-/pg-protocol-1.16.1.tgz 417ms (cache miss)
+101 http fetch GET 200 https://registry.npmjs.org/nodemailer/-/nodemailer-10.0.13.tgz 825ms (cache miss)
+102 http fetch GET 200 https://registry.npmjs.org/@electric-sql/pglite/-/pglite-0.5.8.tgz 2429ms (cache miss)
+103 silly ADD node_modules/xtend
+104 silly ADD node_modules/split2
+105 silly ADD node_modules/postgres-interval
+106 silly ADD node_modules/postgres-date
+107 silly ADD node_modules/postgres-bytea
+108 silly ADD node_modules/postgres-array
+109 silly ADD node_modules/pgpass
+110 silly ADD node_modules/pg-types
+111 silly ADD node_modules/pg-protocol
+112 silly ADD node_modules/pg-pool
+113 silly ADD node_modules/pg-int8
+114 silly ADD node_modules/pg-connection-string
+115 silly ADD node_modules/pg-cloudflare
+116 silly ADD node_modules/pg
+117 silly ADD node_modules/nodemailer
+118 silly ADD node_modules/@electric-sql/pglite
+119 silly REMOVE node_modules/@xtuc/long
+120 silly REMOVE node_modules/@xtuc/ieee754
+121 silly REMOVE node_modules/@webassemblyjs/wasm-parser
+122 silly REMOVE node_modules/@webassemblyjs/wasm-edit
+123 silly REMOVE node_modules/@webassemblyjs/wast-printer
+124 silly REMOVE node_modules/@webassemblyjs/wasm-gen
+125 silly REMOVE node_modules/@webassemblyjs/wasm-opt
+126 silly REMOVE node_modules/@webassemblyjs/utf8
+127 silly REMOVE node_modules/@webassemblyjs/helper-wasm-section
+128 silly REMOVE node_modules/@webassemblyjs/leb128
+129 silly REMOVE node_modules/@webassemblyjs/ieee754
+130 silly REMOVE node_modules/@webassemblyjs/helper-wasm-bytecode
+131 silly REMOVE node_modules/@webassemblyjs/helper-buffer
+132 silly REMOVE node_modules/@webassemblyjs/helper-api-error
+133 silly REMOVE node_modules/@webassemblyjs/helper-numbers
+134 silly REMOVE node_modules/@webassemblyjs/floating-point-hex-parser
+135 silly REMOVE node_modules/@webassemblyjs/ast
+136 silly REMOVE node_modules/@types/eslint-scope
+137 silly REMOVE node_modules/@types/eslint
+138 silly REMOVE node_modules/@jridgewell/source-map
+139 silly REMOVE node_modules/webpack
+140 silly REMOVE node_modules/webpack/node_modules/eslint-scope
+141 silly REMOVE node_modules/webpack/node_modules/estraverse
+142 silly REMOVE node_modules/watchpack
+143 silly REMOVE node_modules/terser-webpack-plugin
+144 silly REMOVE node_modules/terser
+145 silly REMOVE node_modules/schema-utils
+146 silly REMOVE node_modules/schema-utils/node_modules/ajv-keywords
+147 silly REMOVE node_modules/require-from-string
+148 silly REMOVE node_modules/mime-db
+149 silly REMOVE node_modules/merge-stream
+150 silly REMOVE node_modules/loader-runner
+151 silly REMOVE node_modules/json-schema-traverse
+152 silly REMOVE node_modules/jest-worker
+153 silly REMOVE node_modules/jest-worker/node_modules/supports-color
+154 silly REMOVE node_modules/glob-to-regexp
+155 silly REMOVE node_modules/fast-uri
+156 silly REMOVE node_modules/events
+157 silly REMOVE node_modules/commander
+158 silly REMOVE node_modules/chrome-trace-event
+159 silly REMOVE node_modules/ajv
+160 silly REMOVE node_modules/ajv-formats
+161 silly REMOVE node_modules/acorn-import-phases
+162 warn install-scripts 7 packages have install scripts not yet covered by allowScripts:
+162 warn install-scripts   esbuild@0.18.20 (postinstall: node install.js)
+162 warn install-scripts   esbuild@0.25.12 (postinstall: node install.js)
+162 warn install-scripts   esbuild@0.28.0 (postinstall: node install.js)
+162 warn install-scripts   sharp@0.34.5 (install: node install/check.js || npm run build)
+162 warn install-scripts   unrs-resolver@1.11.1 (postinstall: napi-postinstall unrs-resolver 1.11.1 check)
+162 warn install-scripts   workerd@1.20260515.1 (postinstall: node install.js)
+162 warn install-scripts   esbuild@0.27.3 (postinstall: node install.js)
+162 warn install-scripts
+162 warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+163 verbose cwd C:\Users\Pichau\Downloads\Edutrack---version-2.0
+164 verbose os Windows_NT 10.0.26200
+165 verbose node v24.20.0
+166 verbose npm  v11.19.0
+167 verbose exit 0
+168 info ok

@@ -22,6 +22,7 @@ O banco descrito na planilha foi incorporado com migrações versionadas. Dados 
 | POST /api/auth/reset | Nova senha e revogação de sessões |
 | GET/PUT /api/data | Snapshot autorizado e revisão otimista |
 | GET /api/analytics | Preparação Pandas por período/disciplina |
+| POST /api/ai/chat | Chat autenticado, Tool Calling e resposta estruturada do Agent |
 | GET /api/history | Até 100 criações/alterações de tarefas |
 | GET /api/notifications | Lembretes de tarefas próximas/atrasadas |
 | POST /api/notifications/read | Leitura dos lembretes |
@@ -54,6 +55,6 @@ Nenhuma informação é enviada à IA ou ao Classroom. Fontes Google Fonts são 
 1. Validar envio Gmail com credenciais configuradas somente pelo usuário no servidor.
 2. Refinar formulários adicionais das disciplinas e operações específicas da API, paginação, importação controlada e fuso editável.
 3. Implementar fila de e-mails/notificações, push autorizado, relatórios salvos e auditoria durável de exclusões.
-4. IA: solicitação → proposta estruturada → validação → confirmação vinculada aos parâmetros → execução idempotente no backend → auditoria → resposta. Nunca SQL genérico para IA.
+4. Agent: mensagem autenticada → Provider server-side → Tool allowlisted → validação/ownership → execução no backend → auditoria → Structured Output validado. Nunca SQL genérico para IA.
 5. Classroom: OAuth2 com consentimento e escopos mínimos, mapeamento de atividades externas, deduplicação por IDs externos e controles de sincronização. Não usar a senha de app SMTP para isso.
 6. Publicar com HTTPS, PostgreSQL convencional, execução Python e revisão de segurança/privacidade. Mobile usa a mesma API; um app nativo poderá exigir autenticação adequada ao cliente sem relaxar as regras do navegador.

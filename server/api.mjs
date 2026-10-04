@@ -3,6 +3,11 @@ import { token,digest,hashPassword,checkPassword,sessionCookie,readSessionCookie
 import { createMailer } from './mail.mjs';
 import { readData,saveData } from './data.mjs';
 import {prepareAnalytics} from './analytics.mjs';
+import { readAgentConfig } from './agent-config.mjs';
+import { agentChatInputSchema } from './agent-schemas.mjs';
+import { createAgentProvider } from './agent-provider.mjs';
+import { createAgentToolRegistry } from './agent-tools.mjs';
+import { chatWithAgent } from './agent-orchestrator.mjs';
 const email=z.string().trim().email().max(254).transform(v=>v.toLowerCase());
 const password=z.string().min(10).max(128);
 const emailSchema=z.object({email});
@@ -11,6 +16,9 @@ const error=(message,status=400)=>Object.assign(new Error(message),{status});
 function validate(schema,body){const p=schema.safeParse(body);if(!p.success)throw error('Confira os campos informados. A senha deve ter de 10 a 128 caracteres.');return p.data;}
 export function createAPI(db,config) {
   const mail=createMailer(db,config);
+  const agentConfig=config.agentConfig||readAgentConfig(config.env||process.env);
+  const agentProvider=config.agentProvider||createAgentProvider(agentConfig,config.agentTransport);
+  const agentTools=config.agentTools||createAgentToolRegistry(config.agentToolsOptions);
   const attempts=new Map();
   let dummyHash;
   async function limited(req,key,max=10){
@@ -87,6 +95,11 @@ export function createAPI(db,config) {
         const snapshot=await readData(db,user);
         if(subject!=='all'&&!snapshot.data.subjects.some(s=>s.id===subject))throw error('Disciplina não autorizada.',403);
         try{respond(200,await prepareAnalytics(snapshot.data,days,subject));}catch{throw error('Configure Python e Pandas para gerar os relatórios. Veja o guia local.',503);}
+      }
+      else if(path==='/api/ai/chat'&&req.method==='POST'){
+        const parsed=agentChatInputSchema.safeParse(input);
+        if(!parsed.success)throw error('Mensagem inválida.',400);
+        respond(200,await chatWithAgent({db,user,message:parsed.data.message,conversationId:parsed.data.conversationId,config:agentConfig,provider:agentProvider,tools:agentTools}));
       }
       else if(path==='/api/history'&&req.method==='GET')respond(200,{items:(await db.query('SELECT h.id,h.changed_at,h.changes_json,t.title FROM task_history h JOIN academic_tasks t ON t.id=h.task_id WHERE h.user_id=$1 ORDER BY h.changed_at DESC LIMIT 100',[user.id])).rows});
       else if(path==='/api/notifications'&&req.method==='GET'){
