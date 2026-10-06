@@ -1,7 +1,7 @@
 "use client";
 import { useCallback,useEffect,useRef,useState,type Dispatch,type SetStateAction,type ReactNode,type CSSProperties } from "react";
 import Link from "./link";
-import { ArrowRight,ArrowUpRight,Bell,BookOpen,CalendarDays,Check,CircleHelp,Clock3,Flame,LayoutDashboard,ListTodo,Play,Plus,Search,Settings2,Sparkles,Target,TrendingUp } from "lucide-react";
+import { ArrowRight,ArrowUpRight,Bell,BookOpen,CalendarDays,Check,CircleHelp,Clock3,Flame,LayoutDashboard,Link2,ListTodo,Play,Plus,Search,Settings2,Sparkles,Target,TrendingUp } from "lucide-react";
 import { Sidebar,SidebarContent,SidebarFooter,SidebarHeader,SidebarProvider,SidebarTrigger,useSidebar } from "@/components/ui/sidebar";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,6 +18,7 @@ import { UserMenu,AccountSettings,Notifications,HistoryView,Reports,AnalyticsPan
 import { ThemeToggle } from "./theme";
 import { useTheme } from "next-themes";
 import {StudyDashboard as Dashboard} from './study-dashboard';
+import {IntegrationsView} from './integrations-view';
 
 export const navigation=[
  {id:"hoje",label:"Visão geral",href:"/",icon:LayoutDashboard},
@@ -26,6 +27,7 @@ export const navigation=[
  {id:"calendario",label:"Calendário",href:"/calendario",icon:CalendarDays},
  {id:"sessoes",label:"Sessões de estudo",href:"/sessoes",icon:Clock3},
  {id:"relatorios",label:"Relatórios",href:"/relatorios",icon:TrendingUp},
+ {id:"integracoes",label:"Integrações",href:"/integracoes",icon:Link2},
  {id:"agente",label:"Agente de IA",href:"/agente",icon:Sparkles},
 ];
 export function Brand(){return <Link href="/" className="brand" aria-label="EduTrack AI, visão geral"><span className="brand-mark"><Sparkles size={23}/></span><span>EduTrack<span className="brand-ai"> AI</span></span></Link>;}
@@ -70,6 +72,7 @@ switch(page){
  case "progresso":case "relatorios":content=<Reports {...props}/>;break;
  case "notificacoes":content=<Notifications {...props}/>;break;
  case "historico":content=<HistoryView {...props}/>;break;
+ case "integracoes":content=<IntegrationsView/>;break;
  case "agente":content=<AgentView {...props}/>;break;
  case "perfil":content=<ProfileView key={ready?"loaded":"loading"} {...props}/>;break;
  case "configuracoes":content=<AccountSettings {...props}/>;break;

@@ -24,6 +24,20 @@ Nesta validação, o pipeline foi executado com Python 3.13/Pandas por meio de `
 
 O banco PostgreSQL embutido roda EXCLUSIVAMENTE no backend, persiste em `.local/postgres` e não exige instalar PostgreSQL ou Docker. Para PostgreSQL convencional, configure `DATABASE_URL`. Não execute duas instâncias sobre a mesma pasta do banco.
 
+## Catálogo de integrações
+
+A aba **Integrações** (`/integracoes`) apresenta propostas para Google Classroom,
+Microsoft Teams for Education, Moodle, Canvas LMS, Notion e Google Agenda. Inclui
+busca, filtros por categoria e detalhes dos recursos propostos, com links para os
+sites oficiais. Funciona em modo claro/escuro e no menu móvel.
+
+Todos os aplicativos estão **planejados, não conectados**. Esta tela não inicia
+OAuth, não recebe credenciais, não chama APIs externas e não importa atividades.
+As conexões reais, permissões por conta e sincronização pelo backend serão uma
+etapa separada. O agente de IA e o código existente de Classroom não foram alterados.
+
+Teste do catálogo: `node --test tests/integrations.test.mjs`.
+
 ## Primeiro acesso
 
 1. Abra `/cadastro` e crie uma conta de teste.

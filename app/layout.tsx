@@ -3,6 +3,7 @@ import "./globals.css";
 import "./dashboard-improvements.css";
 import "./account-improvements.css";
 import "./study-experience.css";
+import "./integrations.css";
 import { ThemeProvider } from "@/components/edutrack/theme";
 
 export const metadata: Metadata = {
