@@ -44,17 +44,19 @@ function providerTools(tools = []) {
   return tools.map(tool => tool.type === 'function' ? tool : ({ type: 'function', function: { name: tool.name, description: tool.description, parameters: tool.parameters } }));
 }
 
-function geminiSchema(schema) {
+function geminiSchema(schema, options = {}) {
   if (!schema || typeof schema !== 'object' || Array.isArray(schema)) return schema;
   const result = {};
-  for (const key of ['type', 'title', 'description', 'enum', 'format', 'minimum', 'maximum', 'minItems', 'maxItems', 'required']) {
+  const type = Array.isArray(schema.type) && options.tool ? schema.type.find(value => value !== 'null') || 'string' : schema.type;
+  if (type !== undefined) result.type = type;
+  const schemaKeys = options.structured ? ['enum', 'required'] : ['title', 'description', 'enum', 'format', 'minimum', 'maximum', 'minItems', 'maxItems', 'required'];
+  for (const key of schemaKeys) {
     if (schema[key] !== undefined) result[key] = schema[key];
   }
   if (schema.const !== undefined) result.enum = [schema.const];
-  if (schema.properties && typeof schema.properties === 'object') result.properties = Object.fromEntries(Object.entries(schema.properties).map(([name, value]) => [name, geminiSchema(value)]));
-  if (schema.items) result.items = geminiSchema(schema.items);
-  if (schema.additionalProperties !== undefined) result.additionalProperties = typeof schema.additionalProperties === 'object' ? geminiSchema(schema.additionalProperties) : schema.additionalProperties;
-  if (schema.prefixItems) result.prefixItems = schema.prefixItems.map(geminiSchema);
+  if (schema.properties && typeof schema.properties === 'object') result.properties = Object.fromEntries(Object.entries(schema.properties).map(([name, value]) => [name, geminiSchema(value, options)]));
+  if (schema.items) result.items = geminiSchema(schema.items, options);
+  if (schema.prefixItems) result.prefixItems = schema.prefixItems.map(value => geminiSchema(value, options));
   return result;
 }
 
@@ -92,12 +94,17 @@ function geminiMessages(messages) {
     if (message.role === 'assistant') {
       const parts = [];
       if (message.content) parts.push({ text: message.content });
-      for (const call of message.tool_calls || []) parts.push({ functionCall: { name: call.name, args: call.arguments } });
+      for (const call of message.tool_calls || []) {
+        const part = { functionCall: { name: call.name, args: call.arguments } };
+        if (call.id) part.functionCall.id = call.id;
+        if (call.thoughtSignature) part.thoughtSignature = call.thoughtSignature;
+        parts.push(part);
+      }
       return { role: 'model', parts: parts.length ? parts : [{ text: '' }] };
     }
     let response;
     try { response = JSON.parse(message.content || '{}'); } catch { response = { value: message.content || '' }; }
-    return { role: 'user', parts: [{ functionResponse: { name: message.name || 'tool', response } }] };
+    return { role: 'user', parts: [{ functionResponse: { name: message.name || 'tool', ...(message.tool_call_id ? { id: message.tool_call_id } : {}), response } }] };
   });
 }
 
@@ -107,7 +114,7 @@ function geminiSystemInstruction(messages) {
 }
 
 function geminiTools(tools = []) {
-  const definitions = providerTools(tools).map(tool => ({ name: tool.function.name, description: tool.function.description || '', parameters: geminiSchema(tool.function.parameters) }));
+  const definitions = providerTools(tools).map(tool => ({ name: tool.function.name, description: tool.function.description || '', parameters: geminiSchema(tool.function.parameters, { tool: true }) }));
   return definitions.length ? [{ functionDeclarations: definitions }] : undefined;
 }
 
@@ -118,7 +125,14 @@ function parseGeminiResponse(body, model) {
   const toolCalls = [];
   parts.forEach((part, index) => {
     if (typeof part?.text === 'string') content += part.text;
-    if (part?.functionCall?.name) toolCalls.push({ id: `call_${Date.now()}_${index}`, name: part.functionCall.name, arguments: part.functionCall.args && typeof part.functionCall.args === 'object' ? part.functionCall.args : {} });
+    if (part?.functionCall?.name) {
+      toolCalls.push({
+        id: String(part.functionCall.id || `call_${Date.now()}_${index}`),
+        name: part.functionCall.name,
+        arguments: part.functionCall.args && typeof part.functionCall.args === 'object' ? part.functionCall.args : {},
+        ...(part.thoughtSignature ? { thoughtSignature: part.thoughtSignature } : {}),
+      });
+    }
   });
   if (!content && !toolCalls.length) throw new AgentProviderError('Resposta vazia do Provider.', 503, 'provider-empty-response', true);
   return { content: content || null, toolCalls: toolCalls.length ? toolCalls : undefined, model, usage: body?.usageMetadata, raw: body };
@@ -139,6 +153,9 @@ async function completeOpenRouter(config, transport, request) {
         const response = await transport.post(`${config.baseUrl}/chat/completions`, { 'Content-Type': 'application/json', Authorization: `Bearer ${config.apiKey}`, 'X-Title': 'EduTrack AI' }, body, config.timeoutMs);
         if (response.status < 200 || response.status >= 300) {
           const error = new AgentProviderError('O Provider não conseguiu responder.', response.status === 429 ? 429 : response.status >= 500 || response.status === 408 ? 503 : 503, 'provider-http-error', transientStatus(response.status));
+          error.providerStatus = response.status;
+        error.providerMessage = response.body?.error?.message;
+        error.providerCode = response.body?.error?.status;
           if (!error.transient) throw error;
           lastError = error;
           continue;
@@ -159,13 +176,16 @@ async function completeGemini(config, transport, request) {
   if (!config.apiKey) throw new AgentProviderError('O Provider do Agent não está configurado.', 503, 'provider-not-configured');
   const contents = geminiMessages(request.messages);
   if (request.responseFormat && !request.tools?.length) contents.unshift({ role: 'user', parts: [{ text: `Retorne somente JSON válido conforme este schema: ${JSON.stringify(request.responseFormat.schema)}` }] });
-  const body = { systemInstruction: geminiSystemInstruction(request.messages), contents, tools: geminiTools(request.tools), generationConfig: { temperature: request.temperature ?? 0.2, maxOutputTokens: request.maxTokens ?? 1600, ...(request.responseFormat && !request.tools?.length ? { responseMimeType: 'application/json', responseSchema: geminiSchema(request.responseFormat.schema) } : {}) } };
+  const body = { systemInstruction: geminiSystemInstruction(request.messages), contents, tools: geminiTools(request.tools), generationConfig: { temperature: request.temperature ?? 0.2, maxOutputTokens: request.maxTokens ?? 1600, ...(request.responseFormat && !request.tools?.length ? { responseMimeType: 'application/json', responseSchema: geminiSchema(request.responseFormat.schema, { structured: true }) } : {}) } };
   let lastError;
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
       const response = await transport.post(`${config.baseUrl}/${encodeURIComponent(request.model || config.model)}:generateContent`, { 'Content-Type': 'application/json', 'x-goog-api-key': config.apiKey }, body, config.timeoutMs);
       if (response.status < 200 || response.status >= 300) {
         const error = new AgentProviderError('O Provider não conseguiu responder.', response.status === 429 ? 429 : 503, 'provider-http-error', transientStatus(response.status));
+        error.providerStatus = response.status;
+        error.providerMessage = response.body?.error?.message;
+        error.providerCode = response.body?.error?.status;
         if (!error.transient) throw error;
         lastError = error;
       } else return parseGeminiResponse(response.body, request.model || config.model);

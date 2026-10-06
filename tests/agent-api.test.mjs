@@ -5,13 +5,13 @@ import { openDatabase } from '../server/database.mjs';
 import { createAPI } from '../server/api.mjs';
 import { readAgentConfig, AgentError } from '../server/agent-config.mjs';
 
-async function setup(provider) {
+async function setup(provider, env = {}) {
   const db = await openDatabase({ directory: 'memory://', url: '' });
   let api;
   const server = createServer((req, res) => api(req, res));
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const origin = `http://127.0.0.1:${server.address().port}`;
-  api = createAPI(db, { origin, local: true, mailMode: 'local', agentConfig: { ...readAgentConfig({ LLM_PROVIDER: 'openrouter', LLM_MODEL: 'mock' }), maxIterations: 3, maxHistory: 10 }, agentProvider: provider });
+  api = createAPI(db, { origin, local: true, mailMode: 'local', agentConfig: { ...readAgentConfig({ LLM_PROVIDER: 'openrouter', LLM_MODEL: 'mock', OPENROUTER_API_KEY: 'do-not-log-key', ...env }), maxIterations: 3, maxHistory: 10 }, agentProvider: provider });
   async function call(path, data, cookie = '', method = data === undefined ? 'GET' : 'POST') {
     const response = await fetch(origin + path, { method, headers: { Origin: origin, 'Content-Type': 'application/json', ...(cookie ? { Cookie: cookie } : {}) }, body: data === undefined ? undefined : JSON.stringify(data) });
     return { status: response.status, body: await response.json(), cookie: response.headers.get('set-cookie')?.split(';')[0] };
@@ -84,4 +84,24 @@ test('API mapeia timeout do Provider para erro público controlado', async () =>
     assert.equal(response.body.message, 'Tempo excedido.');
     assert.doesNotMatch(response.body.message, /stack|password|api_key|SELECT/i);
   } finally { await new Promise(resolve => setupResult.server.close(resolve)); }
+});
+
+test('API registra diagnóstico seguro do Provider sem expor a chave', async () => {
+  const originalError = console.error;
+  const logs = [];
+  console.error = (...args) => logs.push(args);
+  const setupResult = await setup({ async complete() { throw new AgentError('Não foi possível acessar o Provider.', 503, 'provider-network', new Error('transport')); } });
+  try {
+    const cookie = await setupResult.login('provider-log-agent@example.test', 'Provider Log');
+    const response = await setupResult.call('/api/ai/chat', { message: 'Olá' }, cookie);
+    assert.equal(response.status, 503);
+    const output = JSON.stringify(logs);
+    assert.match(output, /Agent provider failed/);
+    assert.match(output, /openrouter/);
+    assert.match(output, /provider-network/);
+    assert.doesNotMatch(output, /do-not-log-key|Authorization|Olá/);
+  } finally {
+    console.error = originalError;
+    await new Promise(resolve => setupResult.server.close(resolve));
+  }
 });

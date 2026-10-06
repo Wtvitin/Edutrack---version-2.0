@@ -13,9 +13,19 @@ const password=z.string().min(10).max(128);
 const emailSchema=z.object({email});
 const account=u=>({id:u.id,name:u.name,email:u.email,verified:!!u.email_verified_at});
 const error=(message,status=400)=>Object.assign(new Error(message),{status});
+function agentFailureDetails(failure,config){
+  if(!failure?.code?.startsWith('provider-')&&failure?.code!=='model-not-configured')return null;
+  const cause=failure.cause?.cause||failure.cause;
+  const details={provider:config.provider,model:config.model,status:failure.status||500,code:failure.code};
+  if(failure.providerStatus!==undefined)details.providerStatus=failure.providerStatus;
+  if(failure.providerMessage)details.providerMessage=failure.providerMessage;
+  if(failure.providerCode)details.providerCode=failure.providerCode;
+  if(cause?.code||cause?.name)details.causeCode=cause.code||cause.name;
+  return details;
+}
 function validate(schema,body){const p=schema.safeParse(body);if(!p.success)throw error('Confira os campos informados. A senha deve ter de 10 a 128 caracteres.');return p.data;}
 export function createAPI(db,config) {
-  const mail=createMailer(db,config);
+  const mail=config.mailer||createMailer(db,config);
   const agentConfig=config.agentConfig||readAgentConfig(config.env||process.env);
   const agentProvider=config.agentProvider||createAgentProvider(agentConfig,config.agentTransport);
   const agentTools=config.agentTools||createAgentToolRegistry(config.agentToolsOptions);
@@ -55,6 +65,7 @@ export function createAPI(db,config) {
         await limited(req,'register',6);const info=validate(z.object({name:z.string().trim().min(1).max(80),email,password}),input);
         const exists=(await db.query('SELECT * FROM users WHERE email=$1',[info.email])).rows[0];
         if(!exists){const hash=await hashPassword(info.password);const u=await db.transaction(async tx=>{const user=(await tx.query('INSERT INTO users(name,email,password_hash,updated_at) VALUES($1,$2,$3,now()) RETURNING *',[info.name,info.email,hash])).rows[0];await tx.query("INSERT INTO subjects(user_id,name,color,is_general,updated_at) VALUES($1,'Estudo livre','purple',true,now())",[user.id]);return user;});await sendToken(u,'VERIFY');}
+        else if(!exists.email_verified_at)await sendToken(exists,'VERIFY');
         respond(200,{message:'Se o endereço estiver disponível, você receberá um link para confirmar sua conta.'});return true;
       }
       if(path==='/api/auth/login'&&req.method==='POST'){
@@ -108,7 +119,7 @@ export function createAPI(db,config) {
         respond(200,{items:user.notifications_enabled?(await db.query("SELECT n.id,n.read_at,n.scheduled_at,t.title,t.priority FROM notification_deliveries n JOIN academic_tasks t ON t.id=n.task_id WHERE n.user_id=$1 AND n.status='SENT' ORDER BY n.scheduled_at,n.created_at LIMIT 100",[user.id])).rows:[]});
       } else if(path==='/api/notifications/read'&&req.method==='POST') {const info=validate(z.object({id:z.string().uuid().optional()}),input);await db.query('UPDATE notification_deliveries SET read_at=now() WHERE user_id=$1 AND ($2::uuid IS NULL OR id=$2)',[user.id,info.id||null]);respond(200,{ok:true});}
       else throw error('Não encontrado.',404);
-    }catch(e){if(!e.status)console.error('API operation failed:',e.code||e.name);respond(e.status||500,{message:e.status?e.message:'Não foi possível concluir. Tente novamente.'});}
+    }catch(e){const diagnostic=agentFailureDetails(e,agentConfig);if(diagnostic)console.error('Agent provider failed:',diagnostic);else if(!e.status)console.error('API operation failed:',e.code||e.name);respond(e.status||500,{message:e.status?e.message:'Não foi possível concluir. Tente novamente.'});}
     return true;
   };
 }

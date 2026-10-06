@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-10-05
+goal: Permitir que o provider Gemini alcance a API em ambiente local e preservar
+  diagnóstico seguro de falhas.

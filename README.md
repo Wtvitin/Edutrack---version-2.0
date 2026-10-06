@@ -20,7 +20,7 @@ npm start
 
 Abra http://localhost:4173. Para desenvolvimento: `npm run dev` no mesmo endereço (a interface interna usa 4174).
 
-Nesta validação, o pipeline foi executado com Python 3.13/Pandas por meio de `PYTHON_BIN`. Se o Python padrão não tiver as dependências, informe o caminho completo do interpretador em `PYTHON_BIN`. Se o atalho npm falhar, use `node server/start.mjs` após compilar com `node scripts/run-framework.mjs build`.
+Nesta validação, o pipeline foi executado com Python 3.13/Pandas por meio de `PYTHON_BIN`. Se o Python padrão não tiver as dependências, informe o caminho completo do interpretador em `PYTHON_BIN`. Se o atalho npm falhar, use Node 22.15+ com `node --use-system-ca server/start.mjs` após compilar com `node scripts/run-framework.mjs build`.
 
 O banco PostgreSQL embutido roda EXCLUSIVAMENTE no backend, persiste em `.local/postgres` e não exige instalar PostgreSQL ou Docker. Para PostgreSQL convencional, configure `DATABASE_URL`. Não execute duas instâncias sobre a mesma pasta do banco.
 

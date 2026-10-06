@@ -10,8 +10,11 @@ const origin=process.env.APP_ORIGIN||`http://localhost:${port}`;
 const local=process.env.NODE_ENV!=='production'&&['localhost','127.0.0.1'].includes(new URL(origin).hostname);
 const mailMode=process.env.MAIL_MODE||'local';
 if(!local&&(!origin.startsWith('https:')||mailMode==='local'||!process.env.DATABASE_URL))throw new Error('Production requires HTTPS, external PostgreSQL and real mail configuration.');
-if(mailMode==='smtp'&&(!process.env.SMTP_USER||!process.env.SMTP_PASSWORD||!process.env.MAIL_FROM))throw new Error('Configure SMTP_USER, SMTP_PASSWORD and MAIL_FROM in .env.local.');
-const db=await openDatabase();const api=createAPI(db,{origin,local,mailMode});
+if(!['local','smtp','resend'].includes(mailMode))throw new Error('MAIL_MODE must be local, smtp or resend.');
+const smtpPort=Number(process.env.SMTP_PORT||587);
+if(mailMode==='smtp'&&(!process.env.SMTP_HOST||!Number.isInteger(smtpPort)||smtpPort<1||smtpPort>65535||!process.env.SMTP_USER||!process.env.SMTP_PASSWORD||!process.env.MAIL_FROM))throw new Error('Configure SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD and MAIL_FROM in .env.local.');
+if(mailMode==='resend'&&(!process.env.RESEND_API_KEY||!process.env.MAIL_FROM))throw new Error('Configure RESEND_API_KEY and MAIL_FROM in .env.local.');
+const db=await openDatabase();const api=createAPI(db,{origin,local,mailMode,env:process.env});
 const command=process.argv.includes('--dev')?'dev':'start';
 const child=spawn(process.execPath,[fileURLToPath(new URL('../node_modules/vinext/dist/cli.js',import.meta.url)),command,'--port',String(uiPort),'--hostname','127.0.0.1'],{stdio:'inherit',windowsHide:true});
 const server=createServer(async(req,res)=>{

@@ -43,3 +43,11 @@
 - **Credential**: `GOOGLE_API_KEY` is server-only and is absent from the current environment; real Gemini E2E is deferred.
 - **Feature**: `.specs/features/agent-gemini-provider`.
 - **OpenSpec**: `openspec/changes/archive/2026-10-04-migrate-agent-to-google-gemini` and `openspec/specs/ai-gemini-provider/spec.md`.
+
+## Gemini Provider Runtime CA Fix — 2026-10-05
+
+- **Decision**: Os scripts `dev` e `start` usam `node --use-system-ca`; TLS continua validando certificados e Gemini continua sendo o provider padrão.
+- **Root cause**: O Node sem a CA do sistema falhava com `UNABLE_TO_VERIFY_LEAF_SIGNATURE`; depois do transporte funcionar, o adapter enviava campos JSON Schema incompatíveis com Gemini em Tools e Structured Output.
+- **Correction**: O adapter remove campos não suportados na fronteira Gemini, normaliza tipos nullable de Tools e registra status upstream sem expor secrets.
+- **Evidence**: `.specs/features/gemini-provider-runtime-ca/validation.md` e OpenSpec `fix-gemini-provider-runtime-ca`.
+- **Status**: Implementado com limitação de quota/rate limit no cenário real de desempenho.

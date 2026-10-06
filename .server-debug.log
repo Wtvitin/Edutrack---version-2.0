@@ -1,0 +1,84 @@
+
+> edutrack-ai@0.1.0 dev
+> node --use-system-ca server/start.mjs --dev
+
+EduTrack: http://localhost:4173 | e-mails: local | sem Docker
+
+  vinext dev  (Vite 8.0.13)
+
+Sites local sign-in: seedy@sites.test
+Using secrets defined in .env.local
+  ➜  Local:   http://127.0.0.1:4174/
+16:29:03 [vite] (rsc) hmr update /app/globals.css
+[vinext] Server render error: Error: Event handlers cannot be passed to Client Component props.
+  <a href="/" className=... children=... onClick={function onClick}>
+                                                 ^^^^^^^^^^^^^^^^^^
+If you need interactivity, consider converting part of this to a Client Component.
+    at renderModelDestructive (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1419:52)
+    at renderModel (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1271:12)
+    at Object.toJSON (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1107:13)
+    at stringify (<anonymous>)
+    at emitChunk (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1871:1198)
+    at retryTask (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1897:143)
+    at outlineTask (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1023:4)
+    at renderFunctionComponent (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:949:16)
+    at renderElement (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1055:18)
+    at renderModelDestructive (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1323:17)
+[vinext] Server render error: Error: Event handlers cannot be passed to Client Component props.
+  <a href="/" className=... children=... onClick={function onClick}>
+                                                 ^^^^^^^^^^^^^^^^^^
+If you need interactivity, consider converting part of this to a Client Component.
+    at renderModelDestructive (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1419:52)
+    at renderModel (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1271:12)
+    at Object.toJSON (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1107:13)
+    at stringify (<anonymous>)
+    at emitChunk (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1871:1198)
+    at retryTask (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1897:143)
+    at outlineTask (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1023:4)
+    at renderFunctionComponent (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:949:16)
+    at renderElement (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1055:18)
+    at renderModelDestructive (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1323:17)
+[vinext] Server render error: Error: Event handlers cannot be passed to Client Component props.
+  <a href="/" className=... children=... onClick={function onClick}>
+                                                 ^^^^^^^^^^^^^^^^^^
+If you need interactivity, consider converting part of this to a Client Component.
+    at renderModelDestructive (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1419:52)
+    at renderModel (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1271:12)
+    at Object.toJSON (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1107:13)
+    at stringify (<anonymous>)
+    at emitChunk (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1871:1198)
+    at retryTask (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1897:143)
+    at outlineTask (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1023:4)
+    at renderFunctionComponent (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:949:16)
+    at renderElement (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1055:18)
+    at renderModelDestructive (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1323:17)
+[vinext] Server render error: Error: Event handlers cannot be passed to Client Component props.
+  <a href="/" className=... children=... onClick={function onClick}>
+                                                 ^^^^^^^^^^^^^^^^^^
+If you need interactivity, consider converting part of this to a Client Component.
+    at renderModelDestructive (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1419:52)
+    at renderModel (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1271:12)
+    at Object.toJSON (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1107:13)
+    at stringify (<anonymous>)
+    at emitChunk (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1871:1198)
+    at retryTask (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1897:143)
+    at outlineTask (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1023:4)
+    at renderFunctionComponent (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:949:16)
+    at renderElement (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1055:18)
+    at renderModelDestructive (C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/.vite/deps_rsc/react-server-dom-webpack-server.edge.development-BaHf22Tb.js?v=4b81554e:1323:17)
+16:53:41 [vite] Internal server error: fetch failed
+      at Object.processResponse (C:\Users\Pichau\Downloads\Edutrack---version-2.0\node_modules\undici\lib\web\fetch\index.js:237:16)
+      at C:\Users\Pichau\Downloads\Edutrack---version-2.0\node_modules\undici\lib\web\fetch\index.js:1081:19
+      at C:\Users\Pichau\Downloads\Edutrack---version-2.0\node_modules\undici\index.js:157:7
+      at async fetch5 (C:\Users\Pichau\Downloads\Edutrack---version-2.0\node_modules\miniflare\dist\src\index.js:59000:20)
+      at async _Miniflare.dispatchFetch (C:\Users\Pichau\Downloads\Edutrack---version-2.0\node_modules\miniflare\dist\src\index.js:89442:22)
+      at async file:///C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/@cloudflare/vite-plugin/dist/index.mjs:34226:19
+ GET /agente 500 in 9.0s
+16:53:41 [vite] Internal server error: fetch failed
+      at Object.processResponse (C:\Users\Pichau\Downloads\Edutrack---version-2.0\node_modules\undici\lib\web\fetch\index.js:237:16)
+      at C:\Users\Pichau\Downloads\Edutrack---version-2.0\node_modules\undici\lib\web\fetch\index.js:1081:19
+      at C:\Users\Pichau\Downloads\Edutrack---version-2.0\node_modules\undici\index.js:157:7
+      at async fetch5 (C:\Users\Pichau\Downloads\Edutrack---version-2.0\node_modules\miniflare\dist\src\index.js:59000:20)
+      at async _Miniflare.dispatchFetch (C:\Users\Pichau\Downloads\Edutrack---version-2.0\node_modules\miniflare\dist\src\index.js:89442:22)
+      at async file:///C:/Users/Pichau/Downloads/Edutrack---version-2.0/node_modules/@cloudflare/vite-plugin/dist/index.mjs:34226:19
+ GET /agente 500 in 11.6s

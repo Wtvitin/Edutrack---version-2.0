@@ -3,15 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=22.13.0"
+    "node": ">=22.15.0"
   },
   "scripts": {
     "test": "node --test tests/*.test.mjs",
     "typecheck": "tsc --noEmit",
     "install:ci": "node scripts/install-ci.mjs",
-    "dev": "node server/start.mjs --dev",
+    "dev": "node --use-system-ca server/start.mjs --dev",
     "build": "node scripts/run-framework.mjs build",
-    "start": "node server/start.mjs",
+    "start": "node --use-system-ca server/start.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
   },

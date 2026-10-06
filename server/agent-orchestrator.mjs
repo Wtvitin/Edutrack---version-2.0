@@ -88,6 +88,32 @@ function errorContent(error) {
   return { error: error?.publicMessage || 'A Tool não pôde ser executada.', code: error?.code || 'tool-error' };
 }
 
+function completeAnalysisFromTools(content, toolOutputs) {
+  if (typeof content !== 'string') return content;
+  let value;
+  try { value = JSON.parse(content); } catch { return content; }
+  const trends = toolOutputs.get('get_study_trends');
+  if (!trends || value?.type !== 'analysis') return content;
+  const data = [
+    { period: 'Periodo atual', minutes: trends.minutes },
+    { period: 'Periodo anterior', minutes: trends.previousMinutes },
+  ];
+  return JSON.stringify({
+    ...value,
+    metrics: { ...trends },
+    chart: {
+      type: 'comparison',
+      title: 'Comparativo das ultimas duas semanas de estudo',
+      xAxis: { field: 'period', label: 'Periodo' },
+      yAxis: { field: 'minutes', label: 'Minutos estudados' },
+      series: [{ field: 'minutes', label: 'Minutos estudados' }],
+      data,
+      source: { tool: 'get_study_trends' },
+      datasetVersion: 'get_study_trends-v1',
+    },
+  });
+}
+
 function finalToolType(current, definition) {
   return definition?.risk === 'write' || current === 'action' ? 'action' : 'analysis';
 }
@@ -110,6 +136,7 @@ export async function chatWithAgent({ db, user, message, conversationId, config 
   const messages = [{ role: 'system', content: buildSystemPrompt({ subjects }) }, ...history, { role: 'user', content: input.data.message }];
   const executedToolNames = new Set();
   const executedCallKeys = new Set();
+  const toolOutputs = new Map();
   let expectedType;
   let iterations = 0;
   let toolCallCount = 0;
@@ -125,7 +152,7 @@ export async function chatWithAgent({ db, user, message, conversationId, config 
     });
     const calls = Array.isArray(result.toolCalls) ? result.toolCalls : [];
     if (!calls.length) {
-      const response = parseResponse(result.content, expectedType, executedToolNames);
+      const response = parseResponse(completeAnalysisFromTools(result.content, toolOutputs), expectedType, executedToolNames);
       await persistMessage(db, currentConversationId, 'ASSISTANT', JSON.stringify(response));
       await db.query('UPDATE ai_conversations SET updated_at=now() WHERE id=$1 AND user_id=$2', [currentConversationId, user.id]);
       return { conversationId: currentConversationId, response, metadata: { model: result.model || config.model, iterations, toolCalls: toolCallCount } };
@@ -135,7 +162,7 @@ export async function chatWithAgent({ db, user, message, conversationId, config 
     await persistMessage(db, currentConversationId, 'ASSISTANT', JSON.stringify(assistantCallMessage));
     for (const rawCall of calls) {
       toolCallCount += 1;
-      const callParsed = toolCallSchema.safeParse(rawCall);
+      const callParsed = toolCallSchema.safeParse({ id: rawCall?.id, name: rawCall?.name, arguments: rawCall?.arguments });
       const name = typeof rawCall?.name === 'string' ? rawCall.name : 'unknown';
       const callId = typeof rawCall?.id === 'string' ? rawCall.id : randomUUID();
       const definition = registry.get(name);
@@ -158,6 +185,7 @@ export async function chatWithAgent({ db, user, message, conversationId, config 
         failure = error instanceof AgentError ? error : new AgentError('A Tool falhou.', 503, 'tool-failed', error);
         await db.query('UPDATE ai_tool_executions SET output_json=$2,status=$3,completed_at=now() WHERE id=$1 AND user_id=$4', [executionId, JSON.stringify(errorContent(failure)), 'FAILED', user.id]);
       }
+      if (!failure) toolOutputs.set(name, output);
       const toolResult = failure ? errorContent(failure) : output;
       messages.push({ role: 'tool', name, tool_call_id: callId, content: JSON.stringify(toolResult) });
       await persistMessage(db, currentConversationId, 'TOOL', toolContent(name, callId, toolResult));
