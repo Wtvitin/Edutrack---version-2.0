@@ -25,10 +25,12 @@ test('accounts, verification, isolation, audit and password reset',async()=>{
     assert.equal((await call('/api/data',state,'PUT')).status,409);
     assert.equal((await call('/api/history')).body.items.length,1);
     const changed=(await call('/api/data')).body;
+    changed.data.profile.weeklyGoalMinutes=300;
     changed.data.tasks[0].priority='alta';changed.data.tasks[0].due=new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'});
     changed.data.sessions.push({id:crypto.randomUUID(),subjectId:changed.data.subjects[0].id,date:changed.data.tasks[0].due,minutes:25});
     assert.equal((await call('/api/data',changed,'PUT')).status,200);
     const persisted=(await call('/api/data')).body;assert.equal(persisted.data.sessions[0].minutes,25);assert.equal(persisted.data.tasks[0].due,changed.data.tasks[0].due);
+    assert.equal(persisted.data.profile.weeklyGoalMinutes,300);
     assert.equal((await call('/api/history')).body.items.length,2);
     const notices=(await call('/api/notifications')).body.items;assert.equal(notices.length,1);assert.equal((await call('/api/notifications')).body.items.length,1);
     await call('/api/notifications/read',{id:notices[0].id});assert.ok((await call('/api/notifications')).body.items[0].read_at);

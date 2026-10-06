@@ -3,7 +3,7 @@ const date = z.string().refine(v => { if(v==='')return true;const d=new Date(`${
 const id = z.string().uuid();
 export const snapshotSchema = z.object({
   revision:z.number().int().nonnegative(), data:z.object({
-    version:z.literal(1), profile:z.object({ name:z.string().trim().min(1).max(80), goal:z.string().max(300), notificationsEnabled:z.boolean().optional(), theme:z.enum(['system','light','dark']).optional() }),
+    version:z.literal(1), profile:z.object({ name:z.string().trim().min(1).max(80), goal:z.string().max(300), weeklyGoalMinutes:z.number().int().min(0).max(10080).optional(), notificationsEnabled:z.boolean().optional(), theme:z.enum(['system','light','dark']).optional() }),
     subjects:z.array(z.object({ id,name:z.string().trim().min(1).max(60),color:z.enum(['blue','purple','green','rose','orange']),description:z.string().max(200) })).max(500),
     tasks:z.array(z.object({ id,title:z.string().trim().min(1).max(140),subjectId:z.union([id,z.literal('')]),due:date,done:z.boolean(),priority:z.enum(['baixa','normal','alta','urgente']),description:z.string().max(1500),status:z.enum(['TODO','IN_PROGRESS','COMPLETED','CANCELLED']).optional(),difficulty:z.enum(['EASY','MEDIUM','HARD']).optional(),estimatedMinutes:z.number().int().min(1).max(10080).nullable().optional(),completedAt:z.string().nullable().optional() })).max(5000),
     sessions:z.array(z.object({id,subjectId:z.union([id,z.literal('')]),date:date.refine(v=>v!==''),minutes:z.number().int().min(1).max(1440)})).max(20000),
@@ -17,7 +17,7 @@ export async function readData(db, user) {
   const subjects=(await db.query('SELECT * FROM subjects WHERE user_id=$1 ORDER BY created_at,id',[user.id])).rows;
   const tasks=(await db.query('SELECT * FROM academic_tasks WHERE user_id=$1 ORDER BY created_at,id',[user.id])).rows;
   const sessions=(await db.query('SELECT * FROM study_sessions WHERE user_id=$1 ORDER BY started_at,id',[user.id])).rows;
-  return {revision:user.revision,data:{version:1,profile:{id:user.id,name:user.name,goal:user.goal,email:user.email,notificationsEnabled:user.notifications_enabled,theme:user.theme},
+  return {revision:user.revision,data:{version:1,profile:{id:user.id,name:user.name,goal:user.goal,weeklyGoalMinutes:user.weekly_goal_minutes,email:user.email,notificationsEnabled:user.notifications_enabled,theme:user.theme},
     subjects:subjects.map(s=>({id:s.id,name:s.name,color:s.color,description:s.description||''})),
     tasks:tasks.map(t=>({id:t.id,title:t.title,subjectId:t.subject_id,due:day(t.due_date),done:t.status==='COMPLETED',status:t.status,priority:displayPriority[t.priority],description:t.description||'',difficulty:t.difficulty,estimatedMinutes:t.estimated_minutes,completedAt:iso(t.completed_at)})),
     sessions:sessions.map(s=>({id:s.id,subjectId:s.subject_id,date:day(s.started_at),minutes:Math.floor(s.duration_seconds/60)})),
@@ -59,7 +59,7 @@ export async function saveData(db,user,input) {
       await tx.query(`INSERT INTO study_sessions(id,user_id,subject_id,started_at,ended_at,duration_seconds) VALUES($1,$2,$3,$4,$4::timestamptz+($5::integer * interval '1 second'),$5) ON CONFLICT(id) DO UPDATE SET subject_id=$3,started_at=$4,ended_at=$4::timestamptz+($5::integer * interval '1 second'),duration_seconds=$5 WHERE study_sessions.user_id=$2`,[s.id,user.id,s.subjectId||general,start,s.minutes*60]);
     }
     for(const [table,rows] of [['academic_tasks',data.tasks],['study_sessions',data.sessions],['subjects',data.subjects]])await tx.query(`DELETE FROM ${table} WHERE user_id=$1 AND NOT(id=ANY($2::uuid[]))`,[user.id,rows.map(r=>r.id)]);
-    await tx.query('UPDATE users SET name=$2,goal=$3,theme=$4,notifications_enabled=$5,revision=revision+1,updated_at=now() WHERE id=$1',[user.id,data.profile.name,data.profile.goal,data.profile.theme??current.theme,data.profile.notificationsEnabled??current.notifications_enabled]);
+    await tx.query('UPDATE users SET name=$2,goal=$3,theme=$4,notifications_enabled=$5,weekly_goal_minutes=$6,revision=revision+1,updated_at=now() WHERE id=$1',[user.id,data.profile.name,data.profile.goal,data.profile.theme??current.theme,data.profile.notificationsEnabled??current.notifications_enabled,data.profile.weeklyGoalMinutes??current.weekly_goal_minutes]);
     return {revision:revision+1};
   });
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./dashboard-improvements.css";
 import "./account-improvements.css";
+import "./study-experience.css";
 import { ThemeProvider } from "@/components/edutrack/theme";
 
 export const metadata: Metadata = {

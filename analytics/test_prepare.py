@@ -21,11 +21,30 @@ class AnalyticsTest(unittest.TestCase):
         self.assertEqual(m['minutes'],15)
         self.assertIsNone(m['changePercent'])
         self.assertEqual(len(m['subjects']),1)
+    def test_comparison_and_planning_details(self):
+        payload=self.payload()
+        m=prepare(payload)
+        self.assertEqual(m['daily'][-1]['previousMinutes'],50)
+        self.assertEqual(m['onTimeCompleted'],1)
+        self.assertEqual(m['onTimeRate'],100)
+        self.assertEqual(m['subjects'][0]['overdue'],1)
+        self.assertEqual(m['subjects'][0]['previousMinutes'],50)
+        self.assertEqual(m['priorities'][0]['count'],1)
+        self.assertEqual(m['unestimatedTasks'],0)
     def test_empty(self):
         payload=self.payload();payload['data']['sessions']=[];payload['data']['tasks']=[]
         m=prepare(payload)
         self.assertEqual(m['minutes'],0)
         self.assertEqual(m['averageSession'],0)
         self.assertIsNone(m['changePercent'])
+        self.assertIsNone(m['onTimeRate'])
+        self.assertEqual(m['unestimatedTasks'],0)
+    def test_all_supported_windows(self):
+        for days in (7,30,90):
+            payload=self.payload();payload['days']=days
+            self.assertEqual(len(prepare(payload)['daily']),days)
+    def test_invalid_window(self):
+        payload=self.payload();payload['days']=8
+        with self.assertRaises(ValueError):prepare(payload)
 
 if __name__=='__main__':unittest.main()

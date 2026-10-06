@@ -73,7 +73,19 @@ Contas autenticadas podem usar `/agente` para conversar com o Agent por `POST /a
 
 O modo `/demo` permanece offline e não envia dados locais a um modelo. O Agent real depende de uma chave OpenRouter ou Google Gemini e do Python/Pandas quando uma Tool de analytics for usada. Rate limiting distribuído, streaming, RAG, filas e E2E dedicado continuam deferred.
 
-## Organização
+## Experiência de estudos — dashboard, calendário e relatórios
+
+- Dashboard: filtros de 7/30/90 dias e disciplina, cartões que filtram tarefas, foco por atraso/prioridade, detalhes de atividades e meta semanal.
+- Calendário: mês/agenda, filtros combinados, navegação por teclado, estudo registrado, pendências atrasadas de todos os meses e tarefas sem prazo.
+- Relatórios de conta: `GET /api/analytics` processa um snapshot autorizado e minimizado com `server/report-analytics.mjs` e Python/Pandas. Configure `PYTHON_BIN` e instale `analytics/requirements.txt`. Não há fallback silencioso para JavaScript ou IA.
+- Comparação de períodos, detalhes por dia/disciplina, pontualidade, prioridades, cobertura das estimativas e CSV protegido contra fórmulas. PDF usa a impressão do navegador.
+- Meta opcional de 0 a 10080 minutos, persistida pela migração aditiva `005_study_goal.sql`. Zero desativa a meta; o acompanhamento usa todas as disciplinas nos últimos sete dias.
+- A demonstração continua local; não envia dados ao modelo. A meta não é evidência de domínio de um assunto.
+- Os arquivos `server/agent-*`, `server/analytics.mjs` e `components/edutrack/agent-*` não foram alterados. O agente mantém o fluxo existente. Classroom não recebeu alterações.
+
+Validação adicional: `node --test tests/study-experience.test.mjs`; com `PYTHON_BIN` configurado, também confere paridade entre Python e os cálculos da demonstração. Testes Python: `python -m unittest discover -s analytics -p "test_*.py"`.
+
+### Pastas
 
 - `server/`: API, banco, autenticação, e-mail, analytics e servidor local.
 - `database/`: migrações derivadas do dicionário e extensões de contas.

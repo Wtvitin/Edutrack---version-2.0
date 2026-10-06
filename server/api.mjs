@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { token,digest,hashPassword,checkPassword,sessionCookie,readSessionCookie } from './security.mjs';
 import { createMailer } from './mail.mjs';
 import { readData,saveData } from './data.mjs';
-import {prepareAnalytics} from './analytics.mjs';
+import {prepareReportAnalytics} from './report-analytics.mjs';
 import { readAgentConfig } from './agent-config.mjs';
 import { agentChatInputSchema } from './agent-schemas.mjs';
 import { createAgentProvider } from './agent-provider.mjs';
@@ -105,7 +105,7 @@ export function createAPI(db,config) {
         if(![7,30,90].includes(days)||subject!=='all'&&!z.string().uuid().safeParse(subject).success)throw error('Filtro inválido.');
         const snapshot=await readData(db,user);
         if(subject!=='all'&&!snapshot.data.subjects.some(s=>s.id===subject))throw error('Disciplina não autorizada.',403);
-        try{respond(200,await prepareAnalytics(snapshot.data,days,subject));}catch{throw error('Configure Python e Pandas para gerar os relatórios. Veja o guia local.',503);}
+        try{respond(200,await prepareReportAnalytics(snapshot.data,days,subject));}catch{throw error('Não foi possível preparar o relatório. Confira Python/Pandas e tente novamente.',503);}
       }
       else if(path==='/api/ai/chat'&&req.method==='POST'){
         const parsed=agentChatInputSchema.safeParse(input);
