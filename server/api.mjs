@@ -8,6 +8,7 @@ import { agentChatInputSchema } from './agent-schemas.mjs';
 import { createAgentProvider } from './agent-provider.mjs';
 import { createAgentToolRegistry } from './agent-tools.mjs';
 import { chatWithAgent } from './agent-orchestrator.mjs';
+import {CLASSROOM_CALLBACK,readClassroomConfig,createClassroomService} from './classroom.mjs';
 const email=z.string().trim().email().max(254).transform(v=>v.toLowerCase());
 const password=z.string().min(10).max(128);
 const emailSchema=z.object({email});
@@ -29,6 +30,7 @@ export function createAPI(db,config) {
   const agentConfig=config.agentConfig||readAgentConfig(config.env||process.env);
   const agentProvider=config.agentProvider||createAgentProvider(agentConfig,config.agentTransport);
   const agentTools=config.agentTools||createAgentToolRegistry(config.agentToolsOptions);
+  const classroom=createClassroomService(db,config.classroomConfig||readClassroomConfig(config.env||process.env,config.origin,config.local),config.classroomTransport);
   const attempts=new Map();
   let dummyHash;
   async function limited(req,key,max=10){
@@ -50,6 +52,19 @@ export function createAPI(db,config) {
     if(!path.startsWith('/api/'))return false;
     function respond(code,value,cookie){res.writeHead(code,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...(cookie?{'Set-Cookie':cookie}:{})});res.end(JSON.stringify(value));}
     try{
+      // Google returns through a cross-site navigation. Only this GET may bypass
+      // the site guard, and it still requires a session-bound, one-use state.
+      if(path===CLASSROOM_CALLBACK&&req.method==='GET'){
+        let outcome='connected';
+        try{const user=await auth(req);await classroom.callback(user,digest(readSessionCookie(req.headers.cookie)),new URL(req.url,config.origin).searchParams);}
+        catch(e){
+          const codes=['classroom-state','classroom-denied','classroom-scope','classroom-scope-response','classroom-scope-both','classroom-scope-courses','classroom-scope-coursework','classroom-scope-no-courses','classroom-scope-api-denied','classroom-reconnect','classroom-session'];
+          outcome=e.status===401?'classroom-session':codes.includes(e.code)?e.code:'classroom-failed';
+          // Do not log request URLs, authorization codes, credentials or raw errors.
+          console.warn('[Classroom OAuth]',JSON.stringify({outcome,...(e.classroomDiagnostic||{})}));
+        }
+        res.writeHead(303,{Location:'/integracoes?classroom='+outcome,'Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff'});res.end();return true;
+      }
       if(req.headers['sec-fetch-site']==='cross-site')throw error('Origem não autorizada.',403);
       if(!['GET','HEAD'].includes(req.method)){
         if(req.headers.origin!==config.origin)throw error('Origem não autorizada.',403);
@@ -97,6 +112,11 @@ export function createAPI(db,config) {
       if(path==='/api/auth/logout'&&req.method==='POST'){await db.query('DELETE FROM auth_sessions WHERE token_hash=$1',[digest(readSessionCookie(req.headers.cookie))]);respond(200,{ok:true},sessionCookie('',config.origin,true));return true;}
       const user=await auth(req);
       if(path==='/api/auth/session'&&req.method==='GET')respond(200,{user:account(user)});
+      else if(path==='/api/integrations/classroom/status'&&req.method==='GET')respond(200,await classroom.status(user));
+      else if(path==='/api/integrations/classroom/connect'&&req.method==='POST'){await limited(req,'classroom-connect',20);respond(200,await classroom.connect(user,digest(readSessionCookie(req.headers.cookie))));}
+      else if(path==='/api/integrations/classroom/courses'&&req.method==='GET'){await limited(req,'classroom-courses',40);respond(200,await classroom.courses(user));}
+      else if(path==='/api/integrations/classroom/sync'&&req.method==='POST'){await limited(req,'classroom-sync',20);respond(200,await classroom.sync(user,input));}
+      else if(path==='/api/integrations/classroom/disconnect'&&req.method==='POST'){await limited(req,'classroom-disconnect',10);respond(200,await classroom.disconnect(user));}
       else if(path==='/api/data'&&req.method==='GET')respond(200,await readData(db,user));
       else if(path==='/api/data'&&req.method==='PUT')respond(200,await saveData(db,user,input));
       else if(path==='/api/analytics'&&req.method==='GET'){

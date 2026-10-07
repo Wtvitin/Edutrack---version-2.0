@@ -2,10 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {filterIntegrations,integrationCategories,integrations} from '../lib/integrations.ts';
 
-test('catálogo tem seis aplicativos distintos, sem conexões simuladas',()=>{
+test('catálogo tem seis aplicativos distintos, Classroom disponível e cinco propostas',()=>{
   assert.equal(integrations.length,6);
   assert.equal(new Set(integrations.map(app=>app.id)).size,6);
-  assert.ok(integrations.every(app=>app.status==='planned'));
+  assert.equal(integrations.filter(app=>app.status==='planned').length,5);
+  assert.equal(integrations.filter(app=>app.status==='available').length,1);
   assert.equal(integrations[0].id,'google-classroom');
 });
 test('busca ignora acentos, caixa e espaços externos',()=>{

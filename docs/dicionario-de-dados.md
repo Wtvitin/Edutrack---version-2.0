@@ -6,7 +6,9 @@ Origem: `Dicionario_de_Dados_EduTrack_AI_Moderno_tecnico.xlsx`, fornecido pelo u
 
 O backend executa as migrações uma vez, registrando cada aplicação em `schema_migrations`. O banco fica em `.local/postgres` por padrão; nunca dentro do frontend e nunca versionado no Git. `DATABASE_URL` permite usar PostgreSQL convencional sem Docker.
 
-As áreas de IA, push e relatórios persistidos têm tabelas previstas, mas existência da tabela NÃO significa integração ativa. Na interface atual: relatórios são calculados sob demanda; alertas são internos ao aplicativo; IA e Classroom não estão conectados.
+Existência de tabela NÃO significa integração ativa. Na interface atual: relatórios são calculados sob demanda, alertas são internos, agente usa provedor configurado e Classroom permite importação manual após OAuth. Push e relatórios agendados permanecem previstos.
+
+`database/006_classroom.sql` acrescenta quatro tabelas técnicas: `classroom_connections` (tokens cifrados e última sincronização), `classroom_oauth_states` (desafios de autorização de uso único), `classroom_course_links` e `classroom_task_links` (vínculos externos por conta para deduplicação). Essas extensões não alteram a planilha original. Os detalhes e contratos estão em `docs/integrar-classroom.md`.
 
 `subject_id` é obrigatório para tarefas/sessões conforme a planilha. A disciplina protegida "Estudo livre" atende registros sem matéria específica. Relações compostas e validações do backend impedem referências entre contas.
 

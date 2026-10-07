@@ -41,10 +41,13 @@ export async function saveData(db,user,input) {
     if([...data.tasks,...data.sessions].some(t=>t.subjectId&&!ownedSubjects.has(t.subjectId))) throw Object.assign(new Error('Escolha uma disciplina da sua conta.'),{status:400});
     for(const s of data.subjects) await tx.query(`INSERT INTO subjects(id,user_id,name,color,description,updated_at) VALUES($1,$2,$3,$4,$5,now()) ON CONFLICT(id) DO UPDATE SET name=$3,color=$4,description=$5,updated_at=now() WHERE subjects.user_id=$2`,[s.id,user.id,s.name,s.color,s.description]);
     const previous=(await tx.query('SELECT * FROM academic_tasks WHERE user_id=$1',[user.id])).rows;
+    const imported=new Set((await tx.query('SELECT task_id FROM classroom_task_links WHERE user_id=$1 AND task_id IS NOT NULL',[user.id])).rows.map(r=>r.task_id));
     for(const t of data.tasks) {
       const old=previous.find(p=>p.id===t.id);
       const status=t.done?'COMPLETED':t.status==='COMPLETED'?'TODO':t.status||'TODO';
-      const due=t.due?`${t.due}T23:59:59-03:00`:null;
+      // The form edits days, not hours. Keep the Google UTC deadline if its day
+      // was not changed; unrelated snapshot saves must not move an imported deadline.
+      const due=old&&imported.has(t.id)&&t.due===day(old.due_date)?iso(old.due_date):t.due?`${t.due}T23:59:59-03:00`:null;
       const complete=status==='COMPLETED'?(old?.status==='COMPLETED'?iso(old.completed_at):new Date().toISOString()):null;
       const priority=priorities[t.priority];
       await tx.query(`INSERT INTO academic_tasks(id,user_id,subject_id,title,description,status,priority,difficulty,due_date,estimated_minutes,completed_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,now()) ON CONFLICT(id) DO UPDATE SET subject_id=$3,title=$4,description=$5,status=$6,priority=$7,difficulty=$8,due_date=$9,estimated_minutes=$10,completed_at=$11,updated_at=now() WHERE academic_tasks.user_id=$2`,[t.id,user.id,t.subjectId||general,t.title,t.description,status,priority,t.difficulty||'MEDIUM',due,t.estimatedMinutes??null,complete]);

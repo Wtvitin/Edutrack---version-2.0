@@ -16,16 +16,16 @@ export type Integration = {
   proposedFeatures:readonly string[];
   requirement:string;
   officialUrl:string;
-  status:'planned';
+  status:'planned'|'available';
 };
 
-// A catalog, not a connection registry. No credentials, OAuth or sync are implemented here.
+// Static capabilities only. Account-specific connection state comes from the API.
 export const integrations:readonly Integration[] = [
   {id:'google-classroom',name:'Google Classroom',category:'classroom',brand:'classroom',symbol:'GC',
     description:'Turmas, atividades e prazos do seu ambiente de aula.',
-    proposedFeatures:['Importar atividades das turmas escolhidas','Associar turmas às disciplinas do EduTrack','Revisar títulos e prazos antes de importar'],
-    requirement:'A futura conexão dependerá da autorização Google e das permissões da sua instituição.',
-    officialUrl:'https://edu.google.com/workspace-for-education/products/classroom/',status:'planned'},
+    proposedFeatures:['Importar atividades das turmas escolhidas','Criar disciplinas para as turmas selecionadas','Sincronizar títulos e prazos sem duplicar tarefas'],
+    requirement:'A conexão exige autorização Google, configuração no servidor e permissões da sua instituição. Acesso somente de leitura.',
+    officialUrl:'https://edu.google.com/workspace-for-education/products/classroom/',status:'available'},
   {id:'microsoft-teams',name:'Microsoft Teams',category:'classroom',brand:'teams',symbol:'T',
     description:'Atividades e entregas do Teams for Education.',
     proposedFeatures:['Consultar atividades das equipes de estudo','Trazer datas de entrega para o planejamento','Vincular equipes às suas disciplinas'],

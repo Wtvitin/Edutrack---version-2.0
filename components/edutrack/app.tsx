@@ -42,7 +42,7 @@ export function SubjectCards({data}:{data:StudyData}){return <div className="sub
 export default function EduTrack({initialPage="hoje"}:{initialPage?:string}){
 const publicPages=["inicio","login","cadastro","recuperar-senha","nova-senha","verificar-email","privacidade","termos","emails-locais"];
 const page=initialPage.split("/")[0];
-const {data,setData,ready,mode,saving}=useStudyStore(!publicPages.includes(page),page==="demo"||page==="primeiros-passos");
+const {data,setData,ready,mode,saving,reload}=useStudyStore(!publicPages.includes(page),page==="demo"||page==="primeiros-passos");
 const {setTheme}=useTheme();
 useEffect(()=>{if(ready&&data.profile.theme)setTheme(data.profile.theme);},[ready,data.profile.theme,setTheme]);
 const [taskOpen,setTaskOpen]=useState(false);const [editingTask,setEditingTask]=useState<Task|undefined>();const [subjectOpen,setSubjectOpen]=useState(false);
@@ -72,7 +72,7 @@ switch(page){
  case "progresso":case "relatorios":content=<Reports {...props}/>;break;
  case "notificacoes":content=<Notifications {...props}/>;break;
  case "historico":content=<HistoryView {...props}/>;break;
- case "integracoes":content=<IntegrationsView/>;break;
+ case "integracoes":content=<IntegrationsView mode={mode} saving={saving} onImported={reload}/>;break;
  case "agente":content=<AgentView {...props}/>;break;
  case "perfil":content=<ProfileView key={ready?"loaded":"loading"} {...props}/>;break;
  case "configuracoes":content=<AccountSettings {...props}/>;break;

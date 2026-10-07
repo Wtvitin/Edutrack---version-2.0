@@ -4,7 +4,7 @@ Aplicativo Web em português para disciplinas, tarefas, sessões de estudo e rel
 
 ## Executar localmente — sem Docker
 
-Requer Node.js 22.13+ e Python com Pandas para os relatórios de contas.
+Requer Node.js 22.15+ e Python com Pandas para os relatórios de contas.
 
 ```sh
 npm ci
@@ -31,10 +31,13 @@ Microsoft Teams for Education, Moodle, Canvas LMS, Notion e Google Agenda. Inclu
 busca, filtros por categoria e detalhes dos recursos propostos, com links para os
 sites oficiais. Funciona em modo claro/escuro e no menu móvel.
 
-Todos os aplicativos estão **planejados, não conectados**. Esta tela não inicia
-OAuth, não recebe credenciais, não chama APIs externas e não importa atividades.
-As conexões reais, permissões por conta e sincronização pelo backend serão uma
-etapa separada. O agente de IA e o código existente de Classroom não foram alterados.
+O **Classroom agora possui conexão OAuth por conta e importação manual**,
+somente de leitura, após configuração no servidor e consentimento Google. Permite
+escolher turmas, sincronizar sem duplicar e desconectar, preservando alterações
+pessoais. Os outros cinco aplicativos continuam planejados. A demonstração não
+conecta contas. O agente de IA não foi alterado.
+
+Configuração e limites: [Integrar Classroom](docs/integrar-classroom.md).
 
 Teste do catálogo: `node --test tests/integrations.test.mjs`.
 
@@ -95,7 +98,7 @@ O modo `/demo` permanece offline e não envia dados locais a um modelo. O Agent 
 - Comparação de períodos, detalhes por dia/disciplina, pontualidade, prioridades, cobertura das estimativas e CSV protegido contra fórmulas. PDF usa a impressão do navegador.
 - Meta opcional de 0 a 10080 minutos, persistida pela migração aditiva `005_study_goal.sql`. Zero desativa a meta; o acompanhamento usa todas as disciplinas nos últimos sete dias.
 - A demonstração continua local; não envia dados ao modelo. A meta não é evidência de domínio de um assunto.
-- Os arquivos `server/agent-*`, `server/analytics.mjs` e `components/edutrack/agent-*` não foram alterados. O agente mantém o fluxo existente. Classroom não recebeu alterações.
+- Os arquivos `server/agent-*`, `server/analytics.mjs` e `components/edutrack/agent-*` não foram alterados. O agente mantém o fluxo existente. A integração Classroom está documentada separadamente em `docs/integrar-classroom.md`.
 
 Validação adicional: `node --test tests/study-experience.test.mjs`; com `PYTHON_BIN` configurado, também confere paridade entre Python e os cálculos da demonstração. Testes Python: `python -m unittest discover -s analytics -p "test_*.py"`.
 
@@ -112,7 +115,7 @@ Credenciais, banco local, logs e arquivos de ambiente não entram no Git. Faça 
 
 ## Ainda não conectado
 
-Google Classroom, push com app fechado e geração de relatórios em segundo plano. O Agent de IA e suas Tools estão ativos para contas autenticadas quando o Provider server-side está configurado. Campos adicionais da disciplina (professor/período/carga horária) ainda não têm formulário.
+Teams, Moodle, Canvas, Notion, Google Agenda, push com app fechado e geração de relatórios em segundo plano. Classroom possui importação manual autorizada; sincronização automática ainda não foi implementada. O Agent de IA e suas Tools estão ativos para contas autenticadas quando o Provider server-side está configurado. Campos adicionais da disciplina (professor/período/carga horária) ainda não têm formulário.
 
 Antes de produção: revisão de segurança, política de dados/consentimento, backups, recuperação, filas confiáveis de e-mail, monitoramento, limites distribuídos e publicação HTTPS. A caixa local é recusada com NODE_ENV=production. O protótipo não deve ser anunciado como pronto para operação pública.
 

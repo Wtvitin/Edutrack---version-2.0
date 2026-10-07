@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { openDatabase } from './database.mjs';
 import { createAPI } from './api.mjs';
 if(existsSync('.env.local'))process.loadEnvFile('.env.local');
+if(existsSync('.env.classroom.local'))process.loadEnvFile('.env.classroom.local');
 const port=Number(process.env.PORT||4173),uiPort=Number(process.env.UI_PORT||4174);
 const origin=process.env.APP_ORIGIN||`http://localhost:${port}`;
 const local=process.env.NODE_ENV!=='production'&&['localhost','127.0.0.1'].includes(new URL(origin).hostname);

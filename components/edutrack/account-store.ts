@@ -44,5 +44,14 @@ export function useStudyStore(enabled:boolean,forceDemo=false){
       catch(e){epoch.current++;recovering.current=true;toast.error(e instanceof Error?e.message:'Não foi possível salvar.');const latest=await api<{revision:number;data:StudyData}>('/data');revision.current=latest.revision;ref.current=latest.data;setSnapshot(latest.data);recovering.current=false;}
     }).catch(()=>{toast.error('Servidor indisponível. Recarregue a página.');}).finally(()=>{pending.current--;if(!pending.current)setSaving(false);});
   },[]);
-  return {data,setData,ready,mode,saving};
+  const reload=useCallback(async()=>{
+    await queue.current;
+    if(modeRef.current!=='account')return;
+    recovering.current=true;
+    try{
+      const latest=await api<{revision:number;data:StudyData}>('/data');
+      revision.current=latest.revision;ref.current=latest.data;setSnapshot(latest.data);
+    }finally{recovering.current=false;}
+  },[]);
+  return {data,setData,ready,mode,saving,reload};
 }

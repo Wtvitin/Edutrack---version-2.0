@@ -27,6 +27,12 @@ O banco descrito na planilha foi incorporado com migrações versionadas. Dados 
 | GET /api/notifications | Lembretes de tarefas próximas/atrasadas |
 | POST /api/notifications/read | Leitura dos lembretes |
 | GET /api/dev/mail | SOMENTE caixa de teste local |
+| GET /api/integrations/classroom/status | Configuração e conexão por conta sem segredos |
+| POST /api/integrations/classroom/connect | Iniciar autorização Google somente de leitura |
+| GET /api/integrations/google/callback | State de uso único vinculado à sessão e PKCE |
+| GET /api/integrations/classroom/courses | Turmas ativas do aluno autorizado |
+| POST /api/integrations/classroom/sync | Importação manual transacional com revisão |
+| POST /api/integrations/classroom/disconnect | Revogar acesso e remover tokens locais |
 
 ## Segurança implementada e limitações
 
@@ -48,7 +54,7 @@ Períodos incluem hoje e os N−1 dias anteriores; comparação usa os N dias im
 
 O cronômetro continua por timestamps entre páginas e separa armazenamento por conta/dispositivo. Sessões são atribuídas ao dia em que o usuário conclui o cronômetro; não são divididas automaticamente à meia-noite. Estudos manuais usam o dia declarado. Não há deduplicação de sessões simultâneas em diferentes dispositivos ainda.
 
-Nenhuma informação é enviada à IA ou ao Classroom. Fontes Google Fonts são externas; isso é informado no site. A demonstração possui Tool WebMCP estritamente de leitura dos exemplos locais; NÃO opera sobre contas.
+O agente de contas utiliza o provedor configurado no backend com dados autorizados. O Classroom acessa turmas e atividades somente após consentimento Google; OAuth e tokens AES-256-GCM ficam no servidor. A demonstração não usa essas conexões e possui uma Tool WebMCP estritamente de leitura dos exemplos locais; NÃO opera sobre contas. Fontes Google Fonts são externas; isso é informado no site.
 
 ## Evolução gradual
 
@@ -56,5 +62,5 @@ Nenhuma informação é enviada à IA ou ao Classroom. Fontes Google Fonts são 
 2. Refinar formulários adicionais das disciplinas e operações específicas da API, paginação, importação controlada e fuso editável.
 3. Implementar fila de e-mails/notificações, push autorizado, relatórios salvos e auditoria durável de exclusões.
 4. Agent: mensagem autenticada → Provider server-side → Tool allowlisted → validação/ownership → execução no backend → auditoria → Structured Output validado. Nunca SQL genérico para IA.
-5. Classroom: OAuth2 com consentimento e escopos mínimos, mapeamento de atividades externas, deduplicação por IDs externos e controles de sincronização. Não usar a senha de app SMTP para isso.
+5. Classroom já possui OAuth2 de leitura, mapeamento por IDs externos e importação manual. Próximas etapas: sincronização automática e controles adicionais de vínculo/restauração. Não usar a senha de app SMTP para isso. Ver `docs/integrar-classroom.md`.
 6. Publicar com HTTPS, PostgreSQL convencional, execução Python e revisão de segurança/privacidade. Mobile usa a mesma API; um app nativo poderá exigir autenticação adequada ao cliente sem relaxar as regras do navegador.
