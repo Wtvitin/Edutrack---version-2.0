@@ -26,3 +26,11 @@
 ## Provider vigente
 
 O fluxo normal usa `google-gemini` por default, `gemini-2.5-flash` e `GOOGLE_API_KEY` server-side. O adapter Gemini separa `systemInstruction`, converte Tools para function declarations, envia Structured Output quando solicitado e autentica com `x-goog-api-key` sem incluir a chave na URL. OpenRouter permanece somente como compatibilidade explicitamente selecionada e nÃ£o Ã© fallback automÃ¡tico.
+
+## Groq Provider
+
+`server/agent-provider.mjs` contém `GroqProviderAdapter` no mesmo factory do Gemini. A seleção `LLM_PROVIDER=groq` usa `GROQ_API_KEY` exclusivamente no header server-side e exige `GROQ_MODEL`; Gemini mantém `google-gemini` como default e não foi substituído.
+
+O adapter Groq reutiliza o transporte `fetch`, timeout, retry finito, mensagens OpenAI-compatíveis, Tools, Tool results e `response_format` JSON Schema. O Orchestrator continua sendo o único responsável por system prompt, Context Manager, Tool Registry, validação, autorização, ownership, Structured Output final e auditoria. Não houve alteração de banco, frontend, autenticação ou autorização.
+
+Os testes cobrem seleção, chave/modelo ausentes, Tool Calling, Structured Output sem Tools na mesma requisição, `429` com uma repetição, timeout, `401` sem repetição, ausência de fallback e auditoria `provider=groq`. O E2E real depende de credenciais Groq configuradas no ambiente.

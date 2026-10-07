@@ -66,3 +66,13 @@ test('conversationId de outra conta é isolado', async () => {
   const secondUser = { ...first.user, id: randomUUID() };
   await assert.rejects(() => chatWithAgent({ db: first.db, user: secondUser, message: 'Acesso', conversationId: own.conversationId, config: config(), provider, tools: createAgentToolRegistry({ analytics: async () => ({}) }) }), error => error.status === 404);
 });
+
+test('orchestrator audita Tool Groq sem alterar o registry', async () => {
+  const { db, user, subjectId } = await fixture();
+  let calls = 0;
+  const provider = { async complete() { calls += 1; return calls === 1 ? { model: 'openai/gpt-oss-20b', content: null, toolCalls: [{ id: 'groq-create-1', name: 'create_task', arguments: { subjectId, title: 'Revisar Groq' } }] } : { model: 'openai/gpt-oss-20b', content: JSON.stringify({ type: 'action', action: 'create_task', result: { ok: true } }) }; } };
+  const groqConfig = { ...readAgentConfig({ LLM_PROVIDER: 'groq', GROQ_API_KEY: 'server-only', GROQ_MODEL: 'openai/gpt-oss-20b', GROQ_TIMEOUT_MS: '1000' }), maxIterations: 3, maxHistory: 10 };
+  await chatWithAgent({ db, user, message: 'Crie uma tarefa', config: groqConfig, provider, tools: createAgentToolRegistry({ analytics: async () => ({}) }) });
+  const execution = (await db.query('SELECT provider,model,tool_name,status FROM ai_tool_executions WHERE user_id=$1', [user.id])).rows[0];
+  assert.deepEqual(execution, { provider: 'groq', model: 'openai/gpt-oss-20b', tool_name: 'create_task', status: 'SUCCESS' });
+});

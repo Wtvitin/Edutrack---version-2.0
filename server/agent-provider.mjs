@@ -172,6 +172,36 @@ async function completeOpenRouter(config, transport, request) {
   throw lastError || new AgentProviderError('O Provider está indisponível.', 503, 'provider-unavailable', true);
 }
 
+async function completeGroq(config, transport, request) {
+  if (!config.apiKey) throw new AgentProviderError('O Provider do Agent não está configurado.', 503, 'provider-not-configured');
+  const model = request.model || config.model;
+  if (!model) throw new AgentProviderError('O modelo do Agent não está configurado.', 503, 'model-not-configured');
+  const body = { model, messages: request.messages, temperature: request.temperature ?? 0.2, max_tokens: request.maxTokens ?? 1600 };
+  const tools = providerTools(request.tools);
+  if (tools.length) { body.tools = tools; body.tool_choice = request.toolChoice || 'auto'; }
+  if (request.responseFormat) body.response_format = responseFormatBody(request.responseFormat);
+  let lastError;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const response = await transport.post(config.baseUrl + '/chat/completions', { 'Content-Type': 'application/json', Authorization: 'Bearer ' + config.apiKey }, body, config.timeoutMs);
+      if (response.status < 200 || response.status >= 300) {
+        const error = new AgentProviderError('O Provider não conseguiu responder.', response.status === 429 ? 429 : response.status >= 500 || response.status === 408 ? 503 : 503, 'provider-http-error', transientStatus(response.status));
+        error.providerStatus = response.status;
+        error.providerMessage = response.body?.error?.message;
+        error.providerCode = response.body?.error?.code;
+        if (!error.transient) throw error;
+        lastError = error;
+      } else return parseOpenRouterResponse(response.body, model);
+    } catch (error) {
+      const normalized = error instanceof AgentProviderError ? error : new AgentProviderError('O Provider não conseguiu responder.', 503, 'provider-network', true, error);
+      if (!normalized.transient) throw normalized;
+      lastError = normalized;
+    }
+    if (attempt === 0) await wait(50);
+  }
+  throw lastError || new AgentProviderError('O Provider está indisponível.', 503, 'provider-unavailable', true);
+}
+
 async function completeGemini(config, transport, request) {
   if (!config.apiKey) throw new AgentProviderError('O Provider do Agent não está configurado.', 503, 'provider-not-configured');
   const contents = geminiMessages(request.messages);
@@ -199,7 +229,16 @@ async function completeGemini(config, transport, request) {
   throw lastError || new AgentProviderError('O Provider está indisponível.', 503, 'provider-unavailable', true);
 }
 
+export function GroqProviderAdapter(config, transport = createFetchTransport()) {
+  return {
+    async complete(request) {
+      return completeGroq(config, transport, request);
+    },
+  };
+}
+
 export function createAgentProvider(config, transport = createFetchTransport()) {
+  if (config.provider === 'groq') return GroqProviderAdapter(config, transport);
   return {
     async complete(request) {
       if (config.provider === 'google-gemini') return completeGemini(config, transport, request);

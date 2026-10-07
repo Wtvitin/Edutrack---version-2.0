@@ -32,3 +32,9 @@ Há testes mockados de Provider, schemas, Tools, orchestrator e API; o banco de 
 ## Provider vigente — Google Gemini
 
 O estado vigente Ã© `google-gemini` como default, com modelo `gemini-2.5-flash` e `GOOGLE_API_KEY`. OpenRouter nÃ£o Ã© fallback automÃ¡tico e sÃ³ Ã© usado quando selecionado explicitamente. O adapter Gemini usa `generateContent`, `systemInstruction`, function declarations, Structured Output e header server-side `x-goog-api-key`.
+
+## Providers LLM — Gemini + Groq
+
+Gemini continua o provider default: sem `LLM_PROVIDER` ou com `LLM_PROVIDER=google-gemini`, o runtime usa `GOOGLE_API_KEY` e `gemini-2.5-flash`. Com `LLM_PROVIDER=groq`, o factory seleciona exclusivamente `GroqProviderAdapter`; não há fallback automático para Gemini ou OpenRouter.
+
+Groq lê apenas `GROQ_API_KEY`, `GROQ_MODEL`, `GROQ_BASE_URL` e `GROQ_TIMEOUT_MS` no servidor. `GROQ_MODEL` é obrigatório e não tem default no código, pois a implantação deve selecionar modelo com Tool Calling e Structured Output compatíveis. O adapter usa o mesmo Orchestrator, prompt, Context Manager, Tool Registry, ownership, validação e auditoria. Os testes mockados passam; o E2E Groq real permanece condicionado a credencial, modelo e conta de teste configurados.
