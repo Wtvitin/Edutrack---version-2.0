@@ -34,3 +34,15 @@ O fluxo normal usa `google-gemini` por default, `gemini-2.5-flash` e `GOOGLE_API
 O adapter Groq reutiliza o transporte `fetch`, timeout, retry finito, mensagens OpenAI-compatíveis, Tools, Tool results e `response_format` JSON Schema. O Orchestrator continua sendo o único responsável por system prompt, Context Manager, Tool Registry, validação, autorização, ownership, Structured Output final e auditoria. Não houve alteração de banco, frontend, autenticação ou autorização.
 
 Os testes cobrem seleção, chave/modelo ausentes, Tool Calling, Structured Output sem Tools na mesma requisição, `429` com uma repetição, timeout, `401` sem repetição, ausência de fallback e auditoria `provider=groq`. O E2E real depende de credenciais Groq configuradas no ambiente.
+
+## Auditoria documental do sistema
+
+Em 7 de outubro de 2026 foi concluída uma auditoria retroativa das capacidades
+implementadas fora do Agent. Foram adicionadas especificações OpenSpec para
+contas/autenticação, workspace acadêmico, analytics/relatórios, Classroom,
+notificações/histórico, catálogo de integrações e runtime operacional. A spec
+canônica de Groq também foi adicionada a partir da change já concluída.
+
+Nenhum arquivo de código, teste, migration ou comportamento foi alterado. O
+relatório `OPENSPEC_COVERAGE_AUDIT_REPORT.md` contém a matriz, evidências,
+inconsistências históricas e limitações de validação do ambiente.

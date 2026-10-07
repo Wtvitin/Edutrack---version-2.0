@@ -38,3 +38,18 @@ O estado vigente Ã© `google-gemini` como default, com modelo `gemini-2.5-flash
 Gemini continua o provider default: sem `LLM_PROVIDER` ou com `LLM_PROVIDER=google-gemini`, o runtime usa `GOOGLE_API_KEY` e `gemini-2.5-flash`. Com `LLM_PROVIDER=groq`, o factory seleciona exclusivamente `GroqProviderAdapter`; não há fallback automático para Gemini ou OpenRouter.
 
 Groq lê apenas `GROQ_API_KEY`, `GROQ_MODEL`, `GROQ_BASE_URL` e `GROQ_TIMEOUT_MS` no servidor. `GROQ_MODEL` é obrigatório e não tem default no código, pois a implantação deve selecionar modelo com Tool Calling e Structured Output compatíveis. O adapter usa o mesmo Orchestrator, prompt, Context Manager, Tool Registry, ownership, validação e auditoria. Os testes mockados passam; o E2E Groq real permanece condicionado a credencial, modelo e conta de teste configurados.
+
+## Auditoria de cobertura OpenSpec — 7 de outubro de 2026
+
+Além do Agent, o sistema implementado inclui capacidades documentadas
+retroativamente em `openspec/specs/`: ciclo de conta e e-mail, workspace
+acadêmico, analytics e relatórios, Classroom, notificações e histórico, catálogo
+de integrações e runtime operacional. A matriz, as evidências e as divergências
+entre código e documentação estão em `OPENSPEC_COVERAGE_AUDIT_REPORT.md`.
+
+A suíte Node atual registra 69 testes aprovados e 1 teste opcional de Python
+ignorado quando `PYTHON_BIN` não está configurado. Typecheck e build passam; o
+lint completo mantém cinco erros e trinta e sete avisos preexistentes fora do
+escopo documental. Os executáveis `openspec` e Python não estão disponíveis no
+ambiente desta auditoria, portanto suas validações foram registradas como
+deferred e os artefatos foram revisados manualmente.

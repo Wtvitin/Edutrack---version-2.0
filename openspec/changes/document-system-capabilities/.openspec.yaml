@@ -1,0 +1,3 @@
+schema: spec-driven
+created: 2026-10-07
+goal: Documentar retroativamente as capacidades funcionais implementadas no TARGET sem alterar o comportamento.
