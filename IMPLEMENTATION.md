@@ -46,3 +46,19 @@ canônica de Groq também foi adicionada a partir da change já concluída.
 Nenhum arquivo de código, teste, migration ou comportamento foi alterado. O
 relatório `OPENSPEC_COVERAGE_AUDIT_REPORT.md` contém a matriz, evidências,
 inconsistências históricas e limitações de validação do ambiente.
+
+## Correção do erro de resposta Groq
+
+O erro foi reproduzido no fluxo autenticado e não era ausência de credencial. O
+Groq retornava Tool Call, mas rejeitava a segunda requisição por formato de
+`assistant.tool_calls` incompleto; após a primeira correção, rejeitou o nullable
+`status` de `list_tasks` e o schema estrito com objetos dinâmicos.
+
+O adapter Groq passou a normalizar o formato externo sem alterar o contrato do
+Orchestrator, aceitar o filtro opcional nulo de forma controlada e solicitar
+`json_object` para Structured Output dinâmico. O backend continua validando
+`text`, `analysis` e `action` com os schemas existentes.
+
+Arquivos afetados: `server/agent-provider.mjs`, `server/agent-schemas.mjs`,
+`tests/agent-provider.test.mjs` e `tests/agent-tools.test.mjs`. Gemini, auth,
+ownership, Tool Registry, auditoria e frontend permanecem preservados.

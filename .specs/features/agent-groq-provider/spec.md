@@ -83,6 +83,6 @@ As a student, I want Groq Tool Calls to use the same backend authorization and o
 | GROQ-01 | Groq factory selection and no-fallback unit tests |
 | GROQ-02 | Gemini config and request-regression tests |
 | GROQ-03 | Missing key/model and secret-handling config tests |
-| GROQ-04 | Request mapping, Tool Call and JSON Schema tests |
+| GROQ-04 | Request mapping, Tool Call and provider-compatible Structured Output tests |
 | GROQ-05 | Groq Tool audit plus existing unknown Tool, invalid argument and ownership tests |
 | GROQ-06 | Retry, timeout, non-transient error and audit provider tests |

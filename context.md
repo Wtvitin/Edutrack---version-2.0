@@ -53,3 +53,22 @@ lint completo mantém cinco erros e trinta e sete avisos preexistentes fora do
 escopo documental. Os executáveis `openspec` e Python não estão disponíveis no
 ambiente desta auditoria, portanto suas validações foram registradas como
 deferred e os artefatos foram revisados manualmente.
+
+## Correção do erro Groq — 7 de outubro de 2026
+
+O erro real de `Quais são minhas tarefas?` foi reproduzido com HTTP 503 público e
+diagnóstico server-side `providerStatus=400`. O Groq rejeitava a continuação do
+Tool Calling porque a mensagem Assistant interna não tinha `type=function` e o
+objeto `function`; em seguida, a investigação revelou rejeição de `status:null`
+no schema de `list_tasks` e de `additionalProperties:true` no Structured Output
+analítico estrito.
+
+`server/agent-provider.mjs` agora normaliza somente o wire Groq, ajusta o filtro
+nullable e usa JSON object mode com instrução do contrato para respostas dinâmicas.
+`server/agent-schemas.mjs` trata `status:null` como ausência de filtro. A
+validação backend continua sendo a autoridade final. Gemini não recebe essas
+transformações e não há fallback entre providers.
+
+O E2E autenticado real passou em instância isolada com `LLM_PROVIDER=groq`:
+cadastro, verificação, login e `/api/ai/chat` retornaram `200` para a pergunta
+reportada.

@@ -120,11 +120,21 @@ test('Groq envia system prompt, Tools e interpreta Tool Call sem chamar Gemini',
   assert.equal(requests[0].url, 'https://groq.test/openai/v1/chat/completions');
   assert.equal(requests[0].headers.Authorization, 'Bearer groq-key');
   assert.equal(requests[0].body.messages[0].role, 'system');
+  assert.deepEqual(requests[0].body.messages[2].tool_calls, [{ id: 'prior-call', type: 'function', function: { name: 'get_task', arguments: JSON.stringify({ taskId: '11111111-1111-4111-8111-111111111111' }) } }]);
   assert.equal(requests[0].body.messages[3].tool_call_id, 'prior-call');
   assert.equal(requests[0].body.tools[0].function.name, 'get_task');
   assert.equal(requests[0].timeoutMs, 1000);
   assert.doesNotMatch(requests[0].url + JSON.stringify(requests[0].body), /groq-key|gemini/i);
   assert.deepEqual(result.toolCalls, [{ id: 'groq-call-1', name: 'get_task', arguments: { taskId: '11111111-1111-4111-8111-111111111111' } }]);
+});
+
+test('Groq aceita filtro opcional nullable em list_tasks', async () => {
+  let request;
+  const transport = { async post(url, headers, body) { request = body; return { status: 200, body: { choices: [{ message: { content: 'ok' } }] } }; } };
+  const provider = createAgentProvider(config({ provider: 'groq', apiKey: 'groq-key', baseUrl: 'https://groq.test/openai/v1', model: 'openai/gpt-oss-20b' }), transport);
+  await provider.complete({ model: 'openai/gpt-oss-20b', messages: [{ role: 'user', content: 'tarefas' }], tools: [{ name: 'list_tasks', description: 'lista', parameters: { type: 'object', properties: { status: { type: 'string', enum: ['TODO', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'] } } } }] });
+  assert.deepEqual(request.tools[0].function.parameters.properties.status.type, ['string', 'null']);
+  assert.ok(request.tools[0].function.parameters.properties.status.enum.includes(null));
 });
 
 test('Groq envia Structured Output em requisição sem Tools', async () => {
@@ -134,7 +144,9 @@ test('Groq envia Structured Output em requisição sem Tools', async () => {
   const schema = { type: 'object', additionalProperties: false, required: ['type', 'content'], properties: { type: { const: 'text' }, content: { type: 'string' } } };
   await provider.complete({ model: 'openai/gpt-oss-20b', messages: [{ role: 'user', content: 'oi' }], responseFormat: { name: 'agent_text_response_v1', schema } });
   assert.equal(request.body.tools, undefined);
-  assert.deepEqual(request.body.response_format, { type: 'json_schema', json_schema: { name: 'agent_text_response_v1', strict: true, schema } });
+  assert.deepEqual(request.body.response_format, { type: 'json_object' });
+  assert.match(request.body.messages[0].content, /agent_text_response_v1/);
+  assert.match(request.body.messages[0].content, /JSON válido/);
 });
 
 test('Groq repete somente falha transitória e não usa fallback', async () => {

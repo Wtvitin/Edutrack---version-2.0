@@ -45,8 +45,11 @@ substituir os valores comuns.
 ### Requirement: Contrato comum de chat, Tools e Structured Output
 
 O adapter Groq MUST mapear mensagens, system prompt, Tools, Tool results,
-temperatura, limite de tokens e JSON Schema para o endpoint compatível sem alterar
-o contrato interno do Agent.
+temperatura, limite de tokens e o modo de Structured Output compatível com o
+endpoint sem alterar o contrato interno do Agent. O adapter MUST usar JSON
+Schema quando o contrato for aceito pelo endpoint e JSON object mode com
+instrução do contrato quando houver objetos dinâmicos incompatíveis com o modo
+estrito.
 
 #### Scenario: Tool Calling
 
@@ -57,8 +60,8 @@ o contrato interno do Agent.
 #### Scenario: Structured Output
 
 - WHEN o Orchestrator solicita resposta estruturada final
-- THEN Groq MUST receber o schema sem Tools na mesma requisição e o backend MUST
-  validar o JSON antes da resposta.
+- THEN Groq MUST receber JSON estruturado sem Tools na mesma requisição e o
+  backend MUST validar o JSON antes da resposta.
 
 ### Requirement: Retry, timeout, erros e auditoria
 

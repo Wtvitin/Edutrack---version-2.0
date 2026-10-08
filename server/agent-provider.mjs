@@ -44,6 +44,47 @@ function providerTools(tools = []) {
   return tools.map(tool => tool.type === 'function' ? tool : ({ type: 'function', function: { name: tool.name, description: tool.description, parameters: tool.parameters } }));
 }
 
+function groqTools(tools = []) {
+  return providerTools(tools).map(tool => {
+    if (tool.function.name !== 'list_tasks' || !tool.function.parameters?.properties?.status) return tool;
+    const parameters = tool.function.parameters;
+    return {
+      ...tool,
+      function: {
+        ...tool.function,
+        parameters: {
+          ...parameters,
+          properties: {
+            ...parameters.properties,
+            status: {
+              ...parameters.properties.status,
+              type: ['string', 'null'],
+              enum: [...(parameters.properties.status.enum || []), null],
+            },
+          },
+        },
+      },
+    };
+  });
+}
+
+function groqMessages(messages = []) {
+  return messages.map(message => {
+    if (message.role !== 'assistant' || !Array.isArray(message.tool_calls)) return message;
+    return {
+      ...message,
+      tool_calls: message.tool_calls.map(call => ({
+        id: call.id,
+        type: 'function',
+        function: {
+          name: call.name,
+          arguments: typeof call.arguments === 'string' ? call.arguments : JSON.stringify(call.arguments || {}),
+        },
+      })),
+    };
+  });
+}
+
 function geminiSchema(schema, options = {}) {
   if (!schema || typeof schema !== 'object' || Array.isArray(schema)) return schema;
   const result = {};
@@ -63,6 +104,18 @@ function geminiSchema(schema, options = {}) {
 function responseFormatBody(responseFormat) {
   if (!responseFormat) return undefined;
   return { type: 'json_schema', json_schema: { name: responseFormat.name, strict: true, schema: responseFormat.schema } };
+}
+
+function groqResponseMessages(messages, responseFormat) {
+  if (!responseFormat) return groqMessages(messages);
+  const instruction = `Retorne somente JSON válido conforme o contrato ${responseFormat.name}: ${JSON.stringify(responseFormat.schema)}`;
+  const systemIndex = messages.findIndex(message => message.role === 'system');
+  const normalized = systemIndex < 0 ? [{ role: 'system', content: instruction }, ...groqMessages(messages)] : groqMessages(messages).map((message, index) => index === systemIndex ? { ...message, content: `${message.content || ''}\n\n${instruction}` } : message);
+  return [...normalized, { role: 'user', content: 'A ferramenta já foi executada. Não chame nenhuma ferramenta. Retorne somente o JSON final solicitado.' }];
+}
+
+function groqResponseFormatBody(responseFormat) {
+  return responseFormat ? { type: 'json_object' } : undefined;
 }
 
 function parseJsonArguments(value) {
@@ -176,10 +229,10 @@ async function completeGroq(config, transport, request) {
   if (!config.apiKey) throw new AgentProviderError('O Provider do Agent não está configurado.', 503, 'provider-not-configured');
   const model = request.model || config.model;
   if (!model) throw new AgentProviderError('O modelo do Agent não está configurado.', 503, 'model-not-configured');
-  const body = { model, messages: request.messages, temperature: request.temperature ?? 0.2, max_tokens: request.maxTokens ?? 1600 };
-  const tools = providerTools(request.tools);
+  const body = { model, messages: groqResponseMessages(request.messages, request.responseFormat), temperature: request.temperature ?? 0.2, max_tokens: request.maxTokens ?? 1600 };
+  const tools = groqTools(request.tools);
   if (tools.length) { body.tools = tools; body.tool_choice = request.toolChoice || 'auto'; }
-  if (request.responseFormat) body.response_format = responseFormatBody(request.responseFormat);
+  if (request.responseFormat) body.response_format = groqResponseFormatBody(request.responseFormat);
   let lastError;
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {

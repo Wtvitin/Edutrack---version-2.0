@@ -37,7 +37,7 @@ const taskUpdateSchema = z.object({
   estimatedMinutes: z.number().int().min(1).max(10080).nullable().optional(),
 }).strict().refine(value => Object.keys(value).some(key => key !== 'taskId'), 'Informe ao menos um campo para atualizar.');
 const taskIdSchema = z.object({ taskId: uuid }).strict();
-const listTasksSchema = z.object({ status: z.enum(taskStatusValues).optional() }).strict();
+const listTasksSchema = z.object({ status: z.preprocess(value => value === null ? undefined : value, z.enum(taskStatusValues).optional()) }).strict();
 const emptySchema = z.object({}).strict();
 
 export const toolArgumentSchemas = Object.freeze({

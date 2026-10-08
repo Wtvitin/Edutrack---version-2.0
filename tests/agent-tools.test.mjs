@@ -50,6 +50,13 @@ test('Tool desconhecida e argumentos inválidos são rejeitados antes do domíni
   await assert.rejects(() => registry.execute('list_tasks', { userId: randomUUID() }, { db, user }), error => error.code === 'invalid-tool-arguments');
 });
 
+test('list_tasks trata status nulo como ausência de filtro', async () => {
+  const { db, user } = await fixture();
+  const registry = createAgentToolRegistry({ analytics: async () => ({}) });
+  const result = await registry.execute('list_tasks', { status: null }, { db, user });
+  assert.deepEqual(result, { tasks: [], count: 0 });
+});
+
 test('Tools de analytics usam snapshot autorizado e não exigem userId', async () => {
   const { db, user } = await fixture();
   let received;

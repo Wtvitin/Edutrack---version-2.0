@@ -47,3 +47,16 @@ minimizados, e a demonstração MUST permanecer separada do banco e dos Provider
 OAuth Classroom, tokens de conta e credenciais de e-mail MUST permanecer
 server-side. As especificações canônicas e a matriz de cobertura ficam
 registradas em `openspec/specs/` e `OPENSPEC_COVERAGE_AUDIT_REPORT.md`.
+
+## Correção do erro de resposta Groq
+
+O provider Groq MUST converter Tool Calls do contrato interno do Agent para o
+formato wire OpenAI-compatível antes de enviar a continuação da conversa. O
+filtro opcional de `list_tasks` MAY ser retornado pelo modelo como `null`, que
+representa ausência de filtro e continua sujeito à validação backend.
+
+Quando um contrato Structured Output contém objetos dinâmicos incompatíveis com
+o modo JSON Schema estrito do Groq, o adapter MUST solicitar JSON object mode e
+o Backend MUST continuar validando a resposta contra os schemas `text`,
+`analysis` e `action`. Gemini, Orchestrator, Tool Registry, autorização,
+ownership, auditoria e seleção explícita de provider MUST permanecer inalterados.
