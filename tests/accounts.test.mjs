@@ -13,6 +13,7 @@ test('accounts, verification, isolation, audit and password reset',async()=>{
   const call=async(path,data,method=data?'POST':'GET')=>{const response=await fetch(origin+path,{method,headers:{Origin:origin,'Content-Type':'application/json',Cookie:cookie},body:data?JSON.stringify(data):undefined});return {status:response.status,body:await response.json(),cookie:response.headers.get('set-cookie')?.split(';')[0]};};
   try{
     assert.equal((await call('/api/data')).status,401);
+    assert.equal((await call('/api/notifications')).status,401);
     assert.equal((await call('/api/auth/register',{name:'Teste',email:'tester@example.test',password:'testing-pass-123'})).status,200);
     assert.equal((await call('/api/auth/login',{email:'tester@example.test',password:'testing-pass-123'})).status,403);
     const mail=(await call('/api/dev/mail')).body.messages[0];const token=new URL(mail.link).searchParams.get('token');
@@ -34,6 +35,7 @@ test('accounts, verification, isolation, audit and password reset',async()=>{
     assert.equal((await call('/api/history')).body.items.length,2);
     const notices=(await call('/api/notifications')).body.items;assert.equal(notices.length,1);assert.equal((await call('/api/notifications')).body.items.length,1);
     await call('/api/notifications/read',{id:notices[0].id});assert.ok((await call('/api/notifications')).body.items[0].read_at);
+    assert.equal((await call('/api/notifications')).body.unread,0);
     persisted.data.tasks[0].done=true;
     assert.equal((await call('/api/data',persisted,'PUT')).status,200);assert.equal((await call('/api/notifications')).body.items.length,0);
     const completed=(await call('/api/data')).body;assert.ok(completed.data.tasks[0].completedAt);
@@ -43,6 +45,8 @@ test('accounts, verification, isolation, audit and password reset',async()=>{
     const ownerCookie=cookie;cookie='';await call('/api/auth/register',{name:'Outro',email:'other@example.test',password:'testing-pass-456'});
     const otherToken=new URL((await call('/api/dev/mail')).body.messages[0].link).searchParams.get('token');await call('/api/auth/verify',{token:otherToken});cookie=(await call('/api/auth/login',{email:'other@example.test',password:'testing-pass-456'})).cookie;
     const other=(await call('/api/data')).body;assert.equal(other.data.tasks.length,0);other.data.tasks=state.data.tasks;assert.equal((await call('/api/data',other,'PUT')).status,403);
+    assert.deepEqual((await call('/api/notifications')).body.items,[]);
+    assert.equal((await call('/api/notifications/read',{id:notices[0].id})).status,200);
     cookie=ownerCookie;await call('/api/auth/request-reset',{email:'tester@example.test'});const reset=new URL((await call('/api/dev/mail')).body.messages[0].link).searchParams.get('token');
     assert.equal((await call('/api/auth/reset',{token:reset,password:'new-testing-pass-123'})).status,200);
     assert.equal((await call('/api/data')).status,401);

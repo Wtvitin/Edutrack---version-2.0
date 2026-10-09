@@ -7,10 +7,11 @@ import {Panel, PanelHeader, TaskRow} from './app';
 import {Heading, type ViewProps} from './views';
 import {Choice} from './forms';
 import {TaskDetails} from './task-details';
+import {DeadlineBanner,useStudyDay} from './deadline-reminders';
 
 const prettyDay = (day:string) => new Date(`${day}T12:00:00`).toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
 export function CalendarView({data,toggle,editTask}:ViewProps) {
-  const today = dateKey();
+  const today = useStudyDay();
   const [month,setMonth] = useState(today.slice(0,7)), [selected,setSelected] = useState(today);
   const [subject,setSubject] = useState('all'), [priority,setPriority] = useState('all'), [status,setStatus] = useState('pending');
   const [view,setView] = useState('month'), [detailId,setDetailId] = useState(''), [showOverdue,setShowOverdue] = useState(false);
@@ -30,6 +31,7 @@ export function CalendarView({data,toggle,editTask}:ViewProps) {
   function newTask() {editTask({id:'',title:'',description:'',due:selected,done:false,priority:'normal',subjectId:subject==='all'?data.subjects[0]?.id||'':subject});}
   function taskLine(task:Task) {return <div key={task.id} className="calendar-task-item"><TaskRow task={task} data={data} toggle={toggle}/><button className="icon-button" aria-label={`Detalhes de ${task.title}`} onClick={()=>setDetailId(task.id)}><ArrowRight size={18}/></button></div>;}
   return <div className="calendar-page-v2"><Heading title="Dê espaço aos seus planos" description="Entregas, sessões e prioridades reunidas. Selecione um dia para ver os detalhes." action={<button className="button primary" onClick={newTask}><Plus size={18}/>Nova tarefa</button>}/>
+    <DeadlineBanner data={{...data,tasks:visible}}/>
     <div className="calendar-toolbar"><Choice id="calendar-subject" label="Disciplina" value={subject} onChange={setSubject} options={[{value:'all',label:'Todas as disciplinas'},...data.subjects.map(s=>({value:s.id,label:s.name}))]}/>
       <Choice id="calendar-priority" label="Prioridade" value={priority} onChange={setPriority} options={[{value:'all',label:'Todas as prioridades'},...priorities.map(p=>({value:p,label:priorityLabels[p]}))]}/>
       <Choice id="calendar-status" label="Situação" value={status} onChange={setStatus} options={[{value:'pending',label:'Pendentes'},{value:'done',label:'Concluídas'},{value:'all',label:'Todas (exceto canceladas)'}]}/>

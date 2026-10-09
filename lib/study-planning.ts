@@ -1,7 +1,7 @@
 import type {StudyData, Task} from './edutrack';
+import {compareTaskAttention} from './task-attention.mjs';
 
 export const priorities = ['urgente', 'alta', 'normal', 'baixa'] as const;
-const ranks = {urgente: 3, alta: 2, normal: 1, baixa: 0};
 export const isPending = (task: Task) => !task.done && task.status !== 'CANCELLED';
 export function shiftDay(day: string, offset: number) {
   const date = new Date(`${day}T12:00:00Z`);
@@ -12,9 +12,7 @@ export function completionDay(value?: string | null) {
   return value ? new Date(value).toLocaleDateString('en-CA', {timeZone: 'America/Sao_Paulo'}) : '';
 }
 export function compareTasks(a: Task, b: Task, today: string) {
-  const overdue = (t: Task) => !!t.due && t.due < today && isPending(t);
-  return Number(overdue(b)) - Number(overdue(a)) || ranks[b.priority] - ranks[a.priority]
-    || (a.due || '9999').localeCompare(b.due || '9999') || a.title.localeCompare(b.title, 'pt-BR');
+  return compareTaskAttention(a, b, today);
 }
 export function filterCalendarTasks(tasks: Task[], filters: {subject: string; priority: string; status: string}) {
   return tasks.filter(t => t.status !== 'CANCELLED' && (filters.subject === 'all' || t.subjectId === filters.subject)

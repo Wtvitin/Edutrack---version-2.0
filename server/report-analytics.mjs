@@ -13,7 +13,7 @@ export function prepareReportAnalytics(data, days, subject, {python = process.en
   return new Promise((resolve, reject) => {
     const child = spawn(python, ['-X', 'utf8', fileURLToPath(new URL('../analytics/prepare.py', import.meta.url))], {windowsHide: true, stdio: ['pipe', 'pipe', 'pipe']});
     let output = '', size = 0, settled = false;
-    const finish = (error, result) => {if (settled) return; settled = true; clearTimeout(timer); error ? reject(error) : resolve(result);};
+    const finish = (error, result) => {if (settled) return; settled = true; clearTimeout(timer); if (error) reject(error); else resolve(result);};
     const timer = setTimeout(() => {child.kill(); finish(new Error('Reports timeout'));}, timeoutMs);
     child.stdout.on('data', chunk => {size += chunk.length; if (size > 2e6) {child.kill(); finish(new Error('Reports too large'));} else output += chunk;});
     child.stderr.resume();

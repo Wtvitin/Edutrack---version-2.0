@@ -1,7 +1,7 @@
 "use client";
 import {useState} from 'react';
 import {ArrowRight, CalendarDays, Check, Clock3, Plus, Target, TriangleAlert} from 'lucide-react';
-import {dateKey, dueLabel, formatMinutes, priorityLabels, type StudyData, type Task} from '@/lib/edutrack';
+import {dueLabel, formatMinutes, priorityLabels, type StudyData, type Task} from '@/lib/edutrack';
 import {compareTasks, completionDay, isPending, priorities, shiftDay, taskCounts} from '@/lib/study-planning';
 import {Progress} from '@/components/ui/progress';
 import {Panel, PanelHeader, SubjectCards, TaskRow} from './app';
@@ -9,11 +9,12 @@ import {Choice} from './forms';
 import {AnalyticsPanel} from './report-panel';
 import {TaskDetails} from './task-details';
 import Link from './link';
+import {DeadlineBanner,PriorityGuide,useStudyDay} from './deadline-reminders';
 
 export function StudyDashboard({data, toggle, newTask, editTask}: {data:StudyData; toggle:(id:string)=>void; newTask:()=>void; editTask:(task:Task)=>void}) {
   const [days,setDays] = useState(7), [subject,setSubject] = useState('all'), [slice,setSlice] = useState('pending');
   const [priority,setPriority] = useState('all'), [detailId,setDetailId] = useState('');
-  const today = dateKey(), start = shiftDay(today, 1-days);
+  const today = useStudyDay(), start = shiftDay(today, 1-days);
   const tasks = data.tasks.filter(t => subject === 'all' || t.subjectId === subject);
   const pending = tasks.filter(isPending).sort((a,b) => compareTasks(a,b,today));
   const counts = taskCounts(tasks,today);
@@ -26,6 +27,7 @@ export function StudyDashboard({data, toggle, newTask, editTask}: {data:StudyDat
   const goal = data.profile.weeklyGoalMinutes || 0;
   const sliceLabels:Record<string,string> = {pending:'Pendentes',overdue:'Atrasadas',upcoming:'Próximos 7 dias',done:'Concluídas no período'};
   return <div className="dashboard-page study-dashboard-v2">
+    <DeadlineBanner data={{...data,tasks}}/><PriorityGuide/>
     <div className="page-heading dashboard-heading"><div><div className="eyebrow">UM PASSO DE CADA VEZ</div><h1>Encontre seu foco de hoje<span className="heading-dot">.</span></h1><p>Olá, {data.profile.name.split(' ')[0]}. Seu tempo, suas prioridades, seu ritmo.</p></div><button className="button primary" onClick={newTask}><Plus size={18}/>Nova tarefa</button></div>
     <div className="dashboard-toolbar no-print"><Choice id="dashboard-subject" label="Disciplina do painel" value={subject} onChange={setSubject} options={[{value:'all',label:'Todas as disciplinas'},...data.subjects.map(s=>({value:s.id,label:s.name}))]}/><div><span className="field-label">Período de estudo e conclusões</span><div className="period-tabs" aria-label="Período do dashboard">{[7,30,90].map(n=><button key={n} aria-pressed={days===n} onClick={()=>setDays(n)}>{n} dias</button>)}</div></div><Link className="text-link" href="/relatorios">Relatório completo<ArrowRight size={16}/></Link></div>
     <div className="dashboard-metrics" aria-label="Resumo interativo"><Panel><span className="metric-icon purple"><Clock3 size={20}/></span><span>Tempo de estudo · {days} dias</span><strong>{formatMinutes(minutes)}</strong><Link className="text-link" href="/sessoes">Registrar uma sessão<ArrowRight size={15}/></Link></Panel>{[
@@ -37,7 +39,7 @@ export function StudyDashboard({data, toggle, newTask, editTask}: {data:StudyDat
       <Panel className="dashboard-task-list"><PanelHeader title="Sua lista de foco"><Link className="text-link" href="/tarefas">Todas as tarefas<ArrowRight size={15}/></Link></PanelHeader>
         <div className="task-slice-tabs" aria-label="Filtrar lista do dashboard">{Object.entries(sliceLabels).map(([id,label])=><button key={id} aria-pressed={slice===id} onClick={()=>setSlice(id)}>{label}</button>)}</div>
         {priority!=='all' && <button className="active-filter" onClick={()=>setPriority('all')}>Prioridade {priorityLabels[priority as Task['priority']]} · limpar ×</button>}
-        <p className="form-note">{displayed.length} {displayed.length===1?'tarefa':'tarefas'}{slice==='pending'?' · atrasos primeiro, depois prioridade e prazo':''}</p>
+        <p className="form-note">{displayed.length} {displayed.length===1?'tarefa':'tarefas'}{slice==='pending'?' · atrasadas → hoje/amanhã → 2–3 dias → demais; prioridade dentro de cada grupo':''}</p>
         {displayed.length ? displayed.slice(0,6).map(task=><div className="dashboard-task-item" key={task.id}><TaskRow task={task} data={data} toggle={toggle}/><button className="icon-button" aria-label={`Detalhes de ${task.title}`} onClick={()=>setDetailId(task.id)}><ArrowRight size={18}/></button></div>) : <div className="empty-state compact-empty"><Check size={24}/><h3>Nenhuma tarefa neste filtro</h3><p>Você pode mudar o filtro ou planejar uma nova atividade.</p></div>}
         {displayed.length>6 && <Link className="text-link" href="/tarefas">Ver mais {displayed.length-6} tarefas<ArrowRight size={15}/></Link>}
       </Panel></div>

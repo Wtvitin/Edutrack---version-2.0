@@ -17,7 +17,8 @@ if(mailMode==='smtp'&&(!process.env.SMTP_HOST||!Number.isInteger(smtpPort)||smtp
 if(mailMode==='resend'&&(!process.env.RESEND_API_KEY||!process.env.MAIL_FROM))throw new Error('Configure RESEND_API_KEY and MAIL_FROM in .env.local.');
 const db=await openDatabase();const api=createAPI(db,{origin,local,mailMode,env:process.env});
 const command=process.argv.includes('--dev')?'dev':'start';
-const child=spawn(process.execPath,[fileURLToPath(new URL('../node_modules/vinext/dist/cli.js',import.meta.url)),command,'--port',String(uiPort),'--hostname','127.0.0.1'],{stdio:'inherit',windowsHide:true});
+process.env.NEXT_TELEMETRY_DISABLED ??= '1';
+const child=spawn(process.execPath,[fileURLToPath(new URL('../node_modules/next/dist/bin/next',import.meta.url)),command,'--port',String(uiPort),'--hostname','127.0.0.1'],{stdio:'inherit',windowsHide:true});
 const server=createServer(async(req,res)=>{
   if(await api(req,res))return;
   const proxy=request({hostname:'127.0.0.1',port:uiPort,path:req.url,method:req.method,headers:req.headers},response=>{res.writeHead(response.statusCode,response.headers);response.pipe(res);});

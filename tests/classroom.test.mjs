@@ -49,6 +49,13 @@ test('Classroom OAuth, isolation, pagination, import, merge, deletion and revoca
     }
     if(parsed.pathname==='/revoke')return new Response('',{status:failRevoke?503:200});
     assert.equal(options.headers.Authorization,'Bearer fake-access');
+    if(parsed.pathname==='/v1/courses/course1/courseWork/-/studentSubmissions'){
+      assert.equal(parsed.searchParams.get('userId'),'me');
+      assert.equal(parsed.searchParams.get('fields'),'studentSubmissions(id,courseId,courseWorkId,state,late),nextPageToken');
+      if(!parsed.searchParams.has('pageToken'))return Response.json({studentSubmissions:[{id:'submission1',courseId:'course1',courseWorkId:'work1',state:'TURNED_IN',late:false}],nextPageToken:'deliveries2'});
+      assert.equal(parsed.searchParams.get('pageToken'),'deliveries2');
+      return Response.json({studentSubmissions:[{id:'submission2',courseId:'course1',courseWorkId:'work2',state:'CREATED',late:true}]});
+    }
     if(parsed.pathname==='/v1/courses'){
       assert.equal(parsed.searchParams.get('studentId'),'me');assert.equal(parsed.searchParams.get('courseStates'),'ACTIVE');
       return Response.json({courses:noCourses?[]:[{id:'course1',name:'Matemática',courseState:'ACTIVE',section:'Turma A'}]});
@@ -83,10 +90,12 @@ test('Classroom OAuth, isolation, pagination, import, merge, deletion and revoca
   async function sync(courseIds=['course1'],revision){revision??=(await snapshot()).body.revision;return call('/api/integrations/classroom/sync',{courseIds,revision});}
   try{
     assert.equal((await status()).status,401);
+    assert.equal((await call('/api/integrations/classroom/deliveries',{})).status,401);
     const ownerCookie=await account('classroom-owner@example.test');
     const owner=(await db.query("SELECT * FROM users WHERE email='classroom-owner@example.test'")).rows[0];
     assert.equal((await status()).body.connected,false);
     assert.equal((await call('/api/integrations/classroom/connect',{},'POST',{Origin:'https://evil.test'})).status,403);
+    assert.equal((await call('/api/integrations/classroom/deliveries',{},'POST',{Origin:'https://evil.test'})).status,403);
     const state=await authorize();
     const stateRow=(await db.query('SELECT * FROM classroom_oauth_states')).rows[0];assert.notEqual(stateRow.state_hash,state);assert.ok(!stateRow.verifier_encrypted.includes('fake'));
     // A different account and a different session of the owner cannot consume state.
@@ -107,6 +116,12 @@ test('Classroom OAuth, isolation, pagination, import, merge, deletion and revoca
     const imported=await sync();assert.equal(imported.status,200);assert.equal(imported.body.created,2);assert.equal(imported.body.subjectsCreated,1);
     assert.equal((await call('/api/data',before,'PUT')).status,409);
     const data=(await snapshot()).body;assert.equal(data.data.tasks.length,2);assert.equal(data.data.subjects.length,2);
+    const delivery=await call('/api/integrations/classroom/deliveries',{});
+    assert.equal(delivery.status,200);assert.equal(delivery.body.items.length,2);
+    assert.ok(delivery.body.items.some(item=>item.state==='TURNED_IN'));
+    assert.ok(delivery.body.items.some(item=>item.state==='CREATED'&&item.late));
+    assert.deepEqual((await snapshot()).body,data,'remote deliveries must not mark local tasks complete');
+    assert.equal((await call('/api/integrations/classroom/deliveries',{force:true})).status,400);
     const first=data.data.tasks.find(t=>t.title==='Trabalho original');assert.equal(first.due,'2026-10-06');assert.ok(first.description.includes('classroom.google.com'));
     const firstDb=(await db.query('SELECT * FROM academic_tasks WHERE id=$1',[first.id])).rows[0];assert.equal(new Date(firstDb.due_date).toISOString(),'2026-10-07T01:00:00.000Z');assert.equal(firstDb.created_by,'SYSTEM');
     assert.equal((await call('/api/history')).body.items.length,2);
@@ -134,6 +149,7 @@ test('Classroom OAuth, isolation, pagination, import, merge, deletion and revoca
     await db.query('UPDATE classroom_connections SET tokens_encrypted=$2 WHERE user_id=$1',[owner.id,encrypted]);
     assert.equal((await call('/api/integrations/classroom/courses')).status,200);assert.equal(refreshCalls,1);
     cookie=otherCookie;assert.equal((await status()).body.connected,false);assert.equal((await call('/api/integrations/classroom/courses')).status,409);assert.equal((await snapshot()).body.data.tasks.length,0);
+    assert.deepEqual((await call('/api/integrations/classroom/deliveries',{})).body.items,[]);
     cookie=ownerCookie;failRevoke=true;assert.equal((await call('/api/integrations/classroom/disconnect',{})).status,503);assert.equal((await status()).body.connected,true);
     failRevoke=false;assert.equal((await call('/api/integrations/classroom/disconnect',{})).status,200);assert.equal((await status()).body.connected,false);assert.equal((await snapshot()).body.data.tasks.length,1);
     // Reconnect uses retained origin mappings, not duplicate imports.

@@ -1,4 +1,9 @@
 .integrations-page{min-width:0;--integration-muted:#667085}
+.classroom-delivery-status{padding:14px 18px;margin:0 0 20px;border:1px solid var(--border);border-radius:12px;background:var(--card);color:var(--foreground);font-size:.8rem;line-height:1.7;overflow-wrap:anywhere}
+.classroom-delivery-status p{margin:4px 0;color:var(--muted-foreground)}
+.classroom-delivery-status .classroom-delivery-warning{color:#9b3416}.dark .classroom-delivery-status .classroom-delivery-warning{color:#ffc49f}
+.classroom-delivery-badge{display:block;width:fit-content;max-width:100%;margin-top:6px;font-size:.72rem;line-height:1.5;color:var(--muted-foreground);overflow-wrap:anywhere}
+.classroom-delivery-badge.is-delivered{color:#237044}.dark .classroom-delivery-badge.is-delivered{color:#a6e5bc}
 .dark .integrations-page{--integration-muted:#b1bad0}
 .integrations-page .page-heading p{max-width:700px}
 .integration-preview-notice{display:flex;align-items:flex-start;gap:12px;padding:15px 18px;background:var(--secondary);border:1px solid var(--border);border-radius:12px;margin-bottom:24px;font-size:.8rem;line-height:1.7;color:var(--integration-muted)}

@@ -1,9 +1,9 @@
 "use client";
-import {useEffect,useState,type FormEvent} from 'react';
+import {useCallback,useEffect,useState,useSyncExternalStore,type FormEvent} from 'react';
 import {ArrowLeft,ArrowRight,Eye,EyeOff,Mail,Sparkles} from 'lucide-react';
 import Link from './link';
 import {Brand} from './app';
-import {api} from './account-store';
+import {api} from './account-store'; import {navigateTo} from './navigation';
 const info:Record<string,{title:string;description:string;button:string}>={
   login:{title:'Entre na sua conta',description:'Continue de onde você parou.',button:'Entrar'},
   cadastro:{title:'Seu próximo passo começa aqui',description:'Crie sua conta e confirme seu e-mail para começar.',button:'Criar minha conta'},
@@ -11,17 +11,21 @@ const info:Record<string,{title:string;description:string;button:string}>={
   'nova-senha':{title:'Uma nova senha',description:'Escolha uma senha com pelo menos 10 caracteres.',button:'Atualizar senha'},
   'verificar-email':{title:'Confirme seu e-mail',description:'A confirmação protege sua conta e é necessária no primeiro acesso.',button:'Confirmar meu e-mail'},
 };
+function subscribeToLocation(onChange:()=>void){window.addEventListener('popstate',onChange);return ()=>window.removeEventListener('popstate',onChange);}
+const readToken=()=>new URLSearchParams(window.location.search).get('token')||'';
+const emptyToken=()=>'';
 export function AuthPage({page}:{page:string}){
-  const [visible,setVisible]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[success,setSuccess]=useState(false),[local,setLocal]=useState(false),[token,setToken]=useState(''),[resend,setResend]=useState(false);
+  const [visible,setVisible]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[success,setSuccess]=useState(false),[local,setLocal]=useState(false),[resend,setResend]=useState(false);
+  const token=useSyncExternalStore(subscribeToLocation,readToken,emptyToken);
   const content=info[page]||info.login;
-  useEffect(()=>{setToken(new URLSearchParams(window.location.search).get('token')||'');void api<{localMailbox:boolean}>('/health').then(v=>setLocal(v.localMailbox)).catch(()=>{});},[]);
+  useEffect(()=>{let active=true;void api<{localMailbox:boolean}>('/health').then(v=>{if(active)setLocal(v.localMailbox);}).catch(()=>{});return ()=>{active=false;};},[]);
   async function submit(e:FormEvent<HTMLFormElement>){
     e.preventDefault();const fields=Object.fromEntries(new FormData(e.currentTarget));setBusy(true);setMessage('');setSuccess(false);
     try{
       if(page==='nova-senha'&&fields.password!==fields.confirmation)throw new Error('As senhas precisam ser iguais.');
       const path=resend?'/auth/resend':({login:'/auth/login',cadastro:'/auth/register','recuperar-senha':'/auth/request-reset','nova-senha':'/auth/reset','verificar-email':'/auth/verify'} as Record<string,string>)[page];
       const result=await api<{message?:string}>(path,{...fields,token});
-      if(page==='login'&&!resend){localStorage.removeItem('edutrack-mode');window.location.assign('/');return;}
+      if(page==='login'&&!resend){localStorage.removeItem('edutrack-mode');await navigateTo('/');return;}
       setMessage(result.message||'Concluído.');setSuccess(true);
       if(page==='nova-senha'||page==='verificar-email')window.history.replaceState(null,'',window.location.pathname);
     }catch(e){setMessage(e instanceof Error?e.message:'Não foi possível concluir.');}finally{setBusy(false);}
@@ -41,4 +45,4 @@ export function AuthPage({page}:{page:string}){
     <div className="auth-switch">{page==='login'?<>Ainda não tem conta? <Link href="/cadastro">Criar conta</Link></>:<Link href="/login">Voltar para entrar</Link>}</div><div className="auth-divider"><span>ou conheça agora</span></div><Link className="button secondary full-width" href="/demo">Explorar sem criar conta<ArrowRight size={16}/></Link><p className="auth-policy">Confira a <Link href="/privacidade">política de privacidade</Link>. Nunca compartilhe sua senha.</p></div></main></div>;
 }
 type Message={id:string;recipient:string;subject:string;body:string;link:string;created_at:string};
-export function LocalMailbox(){const [messages,setMessages]=useState<Message[]>([]),[error,setError]=useState('');async function load(){try{const result=await api<{messages:Message[]}>('/dev/mail');setMessages(result.messages);}catch{setError('A caixa local não está disponível neste ambiente.');}}useEffect(()=>{void load();},[]);return <main className="information-page"><Link className="back-link" href="/login"><ArrowLeft size={16}/>Voltar para entrar</Link><h1>E-mails de teste</h1><p>Somente para desenvolvimento local. Os links abaixo permitem ativar contas de teste e redefinir senhas; não use esta caixa em produção.</p><button className="button secondary" onClick={()=>void load()}>Atualizar caixa</button>{error&&<p role="alert">{error}</p>}{!messages.length&&!error&&<p>Nenhuma mensagem ainda. Crie uma conta para começar.</p>}{messages.map(m=><article className="panel" key={m.id}><h2>{m.subject}</h2><p>Para: {m.recipient}</p><p>{m.body}</p><Link className="button primary" href={new URL(m.link).pathname+new URL(m.link).search}>Abrir link</Link></article>)}</main>;}
+export function LocalMailbox(){const [messages,setMessages]=useState<Message[]>([]),[error,setError]=useState('');const load=useCallback(()=>api<{messages:Message[]}>('/dev/mail').then(result=>{setMessages(result.messages);setError('');}).catch(()=>setError('A caixa local não está disponível neste ambiente.')),[]);useEffect(()=>{void load();},[load]);return <main className="information-page"><Link className="back-link" href="/login"><ArrowLeft size={16}/>Voltar para entrar</Link><h1>E-mails de teste</h1><p>Somente para desenvolvimento local. Os links abaixo permitem ativar contas de teste e redefinir senhas; não use esta caixa em produção.</p><button className="button secondary" onClick={()=>void load()}>Atualizar caixa</button>{error&&<p role="alert">{error}</p>}{!messages.length&&!error&&<p>Nenhuma mensagem ainda. Crie uma conta para começar.</p>}{messages.map(m=><article className="panel" key={m.id}><h2>{m.subject}</h2><p>Para: {m.recipient}</p><p>{m.body}</p><Link className="button primary" href={new URL(m.link).pathname+new URL(m.link).search}>Abrir link</Link></article>)}</main>;}

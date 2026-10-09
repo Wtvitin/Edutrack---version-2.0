@@ -1386,7 +1386,8 @@
       "SYSTEM"
     ],
     "NotificationType": [
-      "TASK_DUE_24H"
+      "TASK_DUE_24H",
+      "TASK_DEADLINE"
     ],
     "NotificationStatus": [
       "PENDING",

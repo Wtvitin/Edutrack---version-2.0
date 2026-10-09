@@ -14,9 +14,9 @@ test('planejamento exclui canceladas e usa exatamente sete dias', () => {
   assert.deepEqual(taskCounts(items,'2026-10-01'),{pending:5,overdue:1,upcoming:2,urgent:1,withoutDate:1});
   assert.equal(shiftDay('2026-12-31',1),'2027-01-01');assert.equal(shiftDay('2024-03-01',-1),'2024-02-29');
 });
-test('lista de foco coloca atraso primeiro e respeita prioridade e prazo', () => {
+test('lista de foco coloca atraso e proximidade primeiro, depois importância', () => {
   const items=[task({id:'normal'}),task({id:'urgent',priority:'urgente',due:'2026-10-05'}),task({id:'overdue',due:'2026-09-30'}),task({id:'high',priority:'alta',due:''})];
-  assert.deepEqual(items.sort((a,b)=>compareTasks(a,b,'2026-10-01')).map(t=>t.id),['overdue','urgent','high','normal']);
+  assert.deepEqual(items.sort((a,b)=>compareTasks(a,b,'2026-10-01')).map(t=>t.id),['overdue','normal','urgent','high']);
 });
 test('calendário combina disciplina, prioridade e situação', () => {
   const items=fixture().tasks;

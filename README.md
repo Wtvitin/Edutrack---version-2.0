@@ -69,6 +69,8 @@ A caixa local permite usar os links de qualquer conta de teste; não a exponha n
 
 `/demo` usa exemplos em `edutrack-demo-v1` no navegador. Eles NÃO são importados automaticamente para contas. Para usar sua conta após a demonstração, entre novamente em `/login`. O cronômetro é separado por conta/dispositivo e continua entre páginas. Não é sincronizado entre dispositivos.
 
+Em Sessões de estudo, **Resetar** pede confirmação, descarta apenas o tempo da sessão atual e deixa o cronômetro parado em `00:00`. Mantém a disciplina selecionada e não altera os estudos já registrados. Para salvar o tempo, use **Concluir sessão** antes de resetar.
+
 Nas contas, os registros ficam no banco do servidor. Trocar de dispositivo só acessa o mesmo banco se a API estiver disponível naquele dispositivo — localhost aponta para a própria máquina.
 
 A sincronização desta etapa usa um snapshot com revisão otimista; alterações de outra aba geram conflito e não sobrescrevem silenciosamente. O Agent usa endpoint próprio, sessão autenticada e Tools com auditoria, não esse mecanismo de snapshot do frontend.
@@ -77,6 +79,7 @@ A sincronização desta etapa usa um snapshot com revisão otimista; alteraçõe
 
 ```sh
 npm run typecheck
+npm run lint
 npm test
 python -m unittest discover -s analytics -p "test_*.py"
 npm run build
@@ -119,7 +122,94 @@ Teams, Moodle, Canvas, Notion, Google Agenda, push com app fechado e geração d
 
 Antes de produção: revisão de segurança, política de dados/consentimento, backups, recuperação, filas confiáveis de e-mail, monitoramento, limites distribuídos e publicação HTTPS. A caixa local é recusada com NODE_ENV=production. O protótipo não deve ser anunciado como pronto para operação pública.
 
-React 19, TypeScript, Vinext/Vite, Radix/Shadcn, Recharts e Lucide. Infraestrutura Cloudflare/Sites herdada do starter não hospeda a nova API Node/Python: a publicação requer uma estratégia própria para esses serviços.
+React 19, TypeScript, Next.js oficial (App Router), Radix/Shadcn, Recharts e Lucide.
+
+## Runtime oficial do Next.js
+
+O frontend foi migrado de Vinext/Vite para Next.js 16.4.0. `npm run build`
+gera `.next`; `npm start` mantém a API Node e encaminha as telas ao `next start`
+interno. `npm run dev` usa `next dev` no mesmo fluxo. Não exige Docker.
+As portas são definidas em `.env.local` por `PORT`, `UI_PORT` e `APP_ORIGIN`;
+preserve o `APP_ORIGIN` autorizado no OAuth do Classroom. Nunca exponha a porta
+interna da interface como substituta da API: ela não fornece autenticação nem dados.
+
+O banco, os arquivos de ambiente, a chave de criptografia do Classroom e as
+credenciais de IA não mudaram. Após atualizar um clone existente, execute `npm ci`
+e `npm run build` antes de `npm start`. Pare o servidor antes de instalar dependências
+ou substituir o build; não inicie duas instâncias sobre `.local/postgres`.
+
+O lint usa plugins diretos de React, Hooks, TypeScript e acessibilidade, com zero
+avisos permitido. A antiga cadeia de `eslint-config-next`/Vinext que dependia de
+`braces` foi removida; não foi usada uma exceção de auditoria ou versão fictícia.
+
+A configuração Vite/Workers foi removida. Os exemplos D1, os tipos Cloudflare
+e os metadados herdados do starter não são o banco ou a hospedagem do EduTrack.
+Cloudflare/Sites exige um adaptador e uma estratégia de publicação próprios para
+Next.js, API Node e Python; os antigos artefatos `dist` não devem ser publicados.
+Esta migração valida a execução local em Node, não um novo deploy externo.
+
+Após `npm run build`, `npm run test:runtime` verifica 25 páginas, duas rotas 404,
+CSS/JavaScript e os fluxos da API em um banco descartável em memória. Configure
+`PYTHON_BIN` no terminal para a checagem de relatórios. Não chama Google nem IA
+externa e não utiliza `.local/postgres`. `node scripts/smoke-next.mjs --serve`
+mantém essa instância isolada em `http://127.0.0.1:4185` para testes no navegador;
+as credenciais fictícias são exibidas no terminal. Encerre com Ctrl+C.
+Acrescente `--dev` ao script para repetir a validação usando `next dev`.
+
+## Status automático das entregas do Classroom
+
+Após conectar o Google e importar as turmas escolhidas em **Integrações**, o
+EduTrack consulta suas entregas ao abrir uma página autenticada e a cada dois
+minutos enquanto a aba estiver visível. Ao voltar à aba, a consulta vencida é
+retomada. O servidor precisa estar rodando; não há monitoramento com o localhost
+desligado. Não é uma atualização instantânea nem usa Pub/Sub.
+
+O backend usa os mesmos escopos somente de leitura, consulta apenas as entregas
+do aluno (`userId=me`) nas turmas importadas, compartilha a requisição entre abas
+e mantém cache por dois minutos. Falhas têm espera progressiva de até 15 minutos.
+O último resultado é preservado e identificado como potencialmente desatualizado.
+
+Os indicadores aparecem nas tarefas e em seus detalhes, separados da conclusão
+local. **Concluir no EduTrack não entrega no Google; entregar no Google não
+marca automaticamente a tarefa local como concluída.** Devolução pelo professor,
+retirada de entrega e status desconhecido têm rótulos próprios. Novas atividades
+e alterações de enunciado/prazo continuam usando a importação manual existente.
+
+A migração `007_classroom_deliveries.sql` é aplicada no próximo início do backend.
+Ela adiciona somente campos de observação e não modifica conclusões ou revisões
+dos dados locais. O endpoint autenticado `POST /api/integrations/classroom/deliveries`
+aceita apenas `{}` e utiliza proteção de origem/CSRF e limitação de requisições.
+Não retorna tokens nem notas; não implementa escrita no Classroom.
+
+Para conferir a interface com dados fictícios, use
+`node scripts/smoke-next.mjs --serve --classroom` após o build e com `PYTHON_BIN`
+configurado. Essa opção usa banco em memória e transporte Google simulado.
+
+## Prioridades, prazos e lembretes no aplicativo
+
+A prioridade é a importância escolhida pelo usuário; o prazo determina a proximidade. As listas de tarefas, disciplinas, dashboard e calendário seguem a mesma regra determinística: **atrasadas → hoje/amanhã → em 2–3 dias → demais**. Dentro de cada grupo, **Urgente → Alta → Normal → Baixa**, depois prazo e título. Sem prazo, a tarefa fica no último grupo e continua respeitando a importância. A prioridade salva não muda automaticamente, e os relatórios continuam contando a importância escolhida.
+
+| Prioridade | Quando usar | Início do aviso antes do prazo |
+| --- | --- | --- |
+| Urgente | Precisa de atenção prioritária | 7 dias |
+| Alta | Importante; reservar tempo antes da rotina | 3 dias |
+| Normal | Rotina de estudos | 2 dias |
+| Baixa | Pode esperar dentro do mesmo grupo de prazo | 1 dia |
+
+Os avisos mostram **Entrega hoje**, **Entrega amanhã** ou **Entrega em N dias**. São dias de calendário em Brasília, não uma contagem de horas; no Classroom, consulte a origem para o horário exato. Os lembretes deixam de aparecer depois da data de entrega. Não há aviso para tarefas sem prazo, concluídas ou canceladas; a ordenação e os indicadores existentes de atraso continuam preservados.
+
+O sino mostra a quantidade não lida. A aba Notificações conserva um aviso por tarefa/prazo, atualiza a mensagem e preserva a leitura; mudar o prazo pode gerar um novo aviso. Concluir, cancelar, remover, adiar ou reduzir a prioridade retira os avisos que deixaram de ser elegíveis. As configurações permitem desativá-los. Marcar como lido não conclui a tarefa nem altera o Classroom.
+
+Atualização ao abrir o app, alterar tarefas, voltar à aba e a cada **60 segundos com a aba visível**. Não são e-mails, notificações push nem um serviço de fundo com o navegador fechado. A sinalização de prazo na tarefa é informativa, mesmo com lembretes desativados.
+
+Backend: `server/notifications.mjs`, `GET /api/notifications` e migração aditiva `database/008_deadline_reminders.sql` (`TASK_DEADLINE`; o tipo antigo é preservado para o histórico). Política compartilhada: `lib/task-attention.mjs`. A atualização dos avisos não modifica tarefas, revisões ou histórico. O Agent e os escopos/conexão do Classroom não mudaram.
+
+Teste visual isolado, somente dados fictícios em memória:
+
+```powershell
+node scripts/smoke-next.mjs --serve --classroom --deadlines
+```
+
 ## Agent e Google Gemini
 
 O Agent usa Google Gemini por default no servidor (`LLM_PROVIDER=google-gemini`, modelo `gemini-2.5-flash`) e lê `GOOGLE_API_KEY` somente do ambiente server-side. OpenRouter não é fallback automático; só é compatibilidade explícita quando `LLM_PROVIDER=openrouter` é configurado. Sem a chave Gemini, o endpoint protegido retorna erro controlado de provider não configurado.

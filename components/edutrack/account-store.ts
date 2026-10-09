@@ -1,6 +1,6 @@
 "use client";
 import {useEffect,useRef,useState,useCallback,type Dispatch,type SetStateAction} from 'react';
-import {toast} from 'sonner';
+import {toast} from 'sonner'; import {navigateTo} from './navigation';
 import {seedData,type StudyData} from '@/lib/edutrack';
 import {studyDataSchema} from '@/lib/edutrack-schema';
 declare global {interface Window {edutrackFlush?:()=>Promise<void>}}
@@ -21,7 +21,7 @@ export function useStudyStore(enabled:boolean,forceDemo=false){
           const next=parsed?.success?parsed.data:seedData();if(live){ref.current=next;setSnapshot(next);setReady(true);}return;
         }
         const response=await fetch('/api/data',{credentials:'same-origin'});
-        if(response.status===401){window.location.assign('/login');return;}
+        if(response.status===401){await navigateTo('/login');return;}
         if(!response.ok)throw new Error('Não foi possível carregar a conta. Verifique se o servidor está rodando.');
         const result=await response.json() as {revision:number;data:StudyData};if(live){modeRef.current='account';setMode('account');revision.current=result.revision;ref.current=result.data;setSnapshot(result.data);setReady(true);}
       }catch(e){toast.error(e instanceof Error?e.message:'Não foi possível carregar os dados.');}

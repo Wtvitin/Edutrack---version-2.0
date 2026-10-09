@@ -1,7 +1,8 @@
-import {createCipheriv,createDecipheriv,createHash,randomBytes,randomUUID} from 'node:crypto';
+import {createCipheriv,createDecipheriv,createHash,randomBytes} from 'node:crypto';
 import {readFileSync,writeFileSync,mkdirSync,existsSync} from 'node:fs';
 import {dirname,resolve} from 'node:path';
 import {z} from 'zod';
+import {createDeliveryReader} from './classroom-deliveries.mjs';
 
 export const CLASSROOM_SCOPES = [
   'https://www.googleapis.com/auth/classroom.courses.readonly',
@@ -196,7 +197,7 @@ export function createClassroomService(db,settings,{fetchImpl=fetch}={}){
       // A session ended while Google responded must not finish account linking.
       const session=(await tx.query('SELECT token_hash FROM auth_sessions WHERE token_hash=$1 AND user_id=$2 AND expires_at>now()',[sessionHash,user.id])).rows[0];
       if(!session)throw fail('Entre novamente antes de conectar.',401,'classroom-session');
-      await tx.query('INSERT INTO classroom_connections(user_id,tokens_encrypted) VALUES($1,$2) ON CONFLICT(user_id) DO UPDATE SET id=gen_random_uuid(),tokens_encrypted=$2,updated_at=now()',[user.id,encrypted]);
+      await tx.query('INSERT INTO classroom_connections(user_id,tokens_encrypted) VALUES($1,$2) ON CONFLICT(user_id) DO UPDATE SET id=gen_random_uuid(),tokens_encrypted=$2,last_delivery_check_at=NULL,updated_at=now()',[user.id,encrypted]);
     });
   }
   async function courses(user){const {accessToken}=await access(user);return {courses:await listCourses(accessToken)};}
@@ -259,7 +260,7 @@ export function createClassroomService(db,settings,{fetchImpl=fetch}={}){
             }
           }
         }
-        await tx.query('UPDATE classroom_connections SET selected_course_ids=$2,last_sync_at=now(),updated_at=now() WHERE user_id=$1',[user.id,JSON.stringify(courseIds)]);
+        await tx.query('UPDATE classroom_connections SET selected_course_ids=$2,last_sync_at=now(),last_delivery_check_at=NULL,updated_at=now() WHERE user_id=$1',[user.id,JSON.stringify(courseIds)]);
         await tx.query('UPDATE users SET revision=revision+1,updated_at=now() WHERE id=$1',[user.id]);
         return {...result,revision:current.revision+1};
       });
@@ -283,7 +284,8 @@ export function createClassroomService(db,settings,{fetchImpl=fetch}={}){
     });
     return {ok:true,revoked};
   }
-  return {status,connect,callback,courses,sync,disconnect};
+  const deliveries=createDeliveryReader(db,{enabled:settings.enabled,access,pages});
+  return {status,connect,callback,courses,sync,disconnect,deliveries};
 }
 async function audit(tx,userId,old,next,changes){
   await tx.query('INSERT INTO task_history(task_id,user_id,from_status,to_status,from_priority,to_priority,from_due_date,to_due_date,changes_json) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)',[next.id,userId,changes.created?null:old.status,next.status,changes.created?null:old.priority,next.priority,changes.created?null:old.due_date,next.due_date,JSON.stringify(changes)]);

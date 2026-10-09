@@ -2,6 +2,9 @@
 import {CalendarDays, Check, Clock3, Edit3} from 'lucide-react';
 import {Dialog, DialogContent, DialogDescription, DialogTitle} from '@/components/ui/dialog';
 import {dueLabel, formatMinutes, priorityLabels, type StudyData, type Task} from '@/lib/edutrack';
+import {ClassroomTaskBadge} from './classroom-deliveries';
+import {TaskDeadlineMessage} from './deadline-reminders';
+import {priorityPolicy} from '@/lib/task-attention.mjs';
 const statuses = {TODO:'A fazer', IN_PROGRESS:'Em andamento', COMPLETED:'Concluída', CANCELLED:'Cancelada'};
 const difficulty = {EASY:'Fácil', MEDIUM:'Média', HARD:'Difícil'};
 export function TaskDetails({task, data, onClose, editTask, toggle}: {task?:Task; data:StudyData; onClose:()=>void; editTask:(task:Task)=>void; toggle:(id:string)=>void}) {
@@ -13,6 +16,9 @@ export function TaskDetails({task, data, onClose, editTask, toggle}: {task?:Task
         <div><dt><Clock3 size={15}/>Tempo estimado</dt><dd>{task.estimatedMinutes ? formatMinutes(task.estimatedMinutes) : 'Não informado'}</dd></div>
         <div><dt>Dificuldade</dt><dd>{task.difficulty ? difficulty[task.difficulty] : 'Não informada'}</dd></div>
         {task.completedAt && <div><dt>Concluída em</dt><dd>{new Date(task.completedAt).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})} (Brasília)</dd></div>}</dl>
+      <ClassroomTaskBadge taskId={task.id}/>
+      <TaskDeadlineMessage task={task}/>
+      <p className="priority-help">{priorityPolicy[task.priority].description}<small>Aviso a partir de {priorityPolicy[task.priority].reminderDays} dia(s) antes do prazo; a importância não muda automaticamente.</small></p>
       <div className="task-detail-notes"><h3>Anotações</h3><p>{task.description || 'Nenhuma anotação adicionada.'}</p></div>
       <div className="inline-actions wrap"><button className="button secondary" onClick={() => {onClose(); editTask(task);}}><Edit3 size={17}/>Editar tarefa</button><button className="button primary" disabled={task.status === 'CANCELLED'} onClick={() => {toggle(task.id); onClose();}}><Check size={17}/>{task.done ? 'Reabrir tarefa' : 'Concluir tarefa'}</button></div>
     </>}

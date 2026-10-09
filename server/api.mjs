@@ -3,6 +3,7 @@ import { token,digest,hashPassword,checkPassword,sessionCookie,readSessionCookie
 import { createMailer } from './mail.mjs';
 import { readData,saveData } from './data.mjs';
 import {prepareReportAnalytics} from './report-analytics.mjs';
+import {readNotifications} from './notifications.mjs';
 import { readAgentConfig } from './agent-config.mjs';
 import { agentChatInputSchema } from './agent-schemas.mjs';
 import { createAgentProvider } from './agent-provider.mjs';
@@ -113,6 +114,7 @@ export function createAPI(db,config) {
       const user=await auth(req);
       if(path==='/api/auth/session'&&req.method==='GET')respond(200,{user:account(user)});
       else if(path==='/api/integrations/classroom/status'&&req.method==='GET')respond(200,await classroom.status(user));
+      else if(path==='/api/integrations/classroom/deliveries'&&req.method==='POST'){if(!z.object({}).strict().safeParse(input).success)throw error('Consulta de entregas inválida.');await limited(req,'classroom-deliveries:'+user.id,120);respond(200,await classroom.deliveries(user));}
       else if(path==='/api/integrations/classroom/connect'&&req.method==='POST'){await limited(req,'classroom-connect',20);respond(200,await classroom.connect(user,digest(readSessionCookie(req.headers.cookie))));}
       else if(path==='/api/integrations/classroom/courses'&&req.method==='GET'){await limited(req,'classroom-courses',40);respond(200,await classroom.courses(user));}
       else if(path==='/api/integrations/classroom/sync'&&req.method==='POST'){await limited(req,'classroom-sync',20);respond(200,await classroom.sync(user,input));}
@@ -133,11 +135,8 @@ export function createAPI(db,config) {
         respond(200,await chatWithAgent({db,user,message:parsed.data.message,conversationId:parsed.data.conversationId,config:agentConfig,provider:agentProvider,tools:agentTools}));
       }
       else if(path==='/api/history'&&req.method==='GET')respond(200,{items:(await db.query('SELECT h.id,h.changed_at,h.changes_json,t.title FROM task_history h JOIN academic_tasks t ON t.id=h.task_id WHERE h.user_id=$1 ORDER BY h.changed_at DESC LIMIT 100',[user.id])).rows});
-      else if(path==='/api/notifications'&&req.method==='GET'){
-        if(user.notifications_enabled){await db.query(`INSERT INTO notification_deliveries(user_id,task_id,type,status,scheduled_at,sent_at) SELECT user_id,id,'TASK_DUE_24H','SENT',due_date,now() FROM academic_tasks WHERE user_id=$1 AND status IN ('TODO','IN_PROGRESS') AND due_date <= now()+interval '24 hours' AND due_date >= now()-interval '7 days' ON CONFLICT(task_id,type,scheduled_at) DO NOTHING`,[user.id]);}
-        await db.query(`UPDATE notification_deliveries n SET status='CANCELLED' FROM academic_tasks t WHERE n.task_id=t.id AND n.user_id=$1 AND (t.status NOT IN ('TODO','IN_PROGRESS') OR t.due_date IS DISTINCT FROM n.scheduled_at)`,[user.id]);
-        respond(200,{items:user.notifications_enabled?(await db.query("SELECT n.id,n.read_at,n.scheduled_at,t.title,t.priority FROM notification_deliveries n JOIN academic_tasks t ON t.id=n.task_id WHERE n.user_id=$1 AND n.status='SENT' ORDER BY n.scheduled_at,n.created_at LIMIT 100",[user.id])).rows:[]});
-      } else if(path==='/api/notifications/read'&&req.method==='POST') {const info=validate(z.object({id:z.string().uuid().optional()}),input);await db.query('UPDATE notification_deliveries SET read_at=now() WHERE user_id=$1 AND ($2::uuid IS NULL OR id=$2)',[user.id,info.id||null]);respond(200,{ok:true});}
+      else if(path==='/api/notifications'&&req.method==='GET')respond(200,await readNotifications(db,user));
+      else if(path==='/api/notifications/read'&&req.method==='POST') {const info=validate(z.object({id:z.string().uuid().optional()}),input);await db.query("UPDATE notification_deliveries SET read_at=now() WHERE user_id=$1 AND status='SENT' AND ($2::uuid IS NULL OR id=$2)",[user.id,info.id||null]);respond(200,{ok:true});}
       else throw error('Não encontrado.',404);
     }catch(e){const diagnostic=agentFailureDetails(e,agentConfig);if(diagnostic)console.error('Agent provider failed:',diagnostic);else if(!e.status)console.error('API operation failed:',e.code||e.name);respond(e.status||500,{message:e.status?e.message:'Não foi possível concluir. Tente novamente.'});}
     return true;
