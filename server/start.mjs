@@ -22,6 +22,7 @@ const child=spawn(process.execPath,[fileURLToPath(new URL('../node_modules/next/
 const server=createServer(async(req,res)=>{
   if(await api(req,res))return;
   const proxy=request({hostname:'127.0.0.1',port:uiPort,path:req.url,method:req.method,headers:req.headers},response=>{res.writeHead(response.statusCode,response.headers);response.pipe(res);});
+  req.on('error',()=>proxy.destroy());res.on('close',()=>proxy.destroy());
   proxy.on('error',()=>{if(!res.headersSent)res.writeHead(503,{'Content-Type':'text/plain; charset=utf-8'});res.end('EduTrack está iniciando. Atualize em alguns segundos.');});req.pipe(proxy);
 });
 server.on('upgrade',(req,socket,head)=>{

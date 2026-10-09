@@ -32,3 +32,43 @@ Há testes mockados de Provider, schemas, Tools, orchestrator e API; o banco de 
 ## Provider vigente — Google Gemini
 
 O estado vigente Ã© `google-gemini` como default, com modelo `gemini-2.5-flash` e `GOOGLE_API_KEY`. OpenRouter nÃ£o Ã© fallback automÃ¡tico e sÃ³ Ã© usado quando selecionado explicitamente. O adapter Gemini usa `generateContent`, `systemInstruction`, function declarations, Structured Output e header server-side `x-goog-api-key`.
+
+## Providers LLM — Gemini + Groq
+
+Gemini continua o provider default: sem `LLM_PROVIDER` ou com `LLM_PROVIDER=google-gemini`, o runtime usa `GOOGLE_API_KEY` e `gemini-2.5-flash`. Com `LLM_PROVIDER=groq`, o factory seleciona exclusivamente `GroqProviderAdapter`; não há fallback automático para Gemini ou OpenRouter.
+
+Groq lê apenas `GROQ_API_KEY`, `GROQ_MODEL`, `GROQ_BASE_URL` e `GROQ_TIMEOUT_MS` no servidor. `GROQ_MODEL` é obrigatório e não tem default no código, pois a implantação deve selecionar modelo com Tool Calling e Structured Output compatíveis. O adapter usa o mesmo Orchestrator, prompt, Context Manager, Tool Registry, ownership, validação e auditoria. Os testes mockados passam; o E2E Groq real permanece condicionado a credencial, modelo e conta de teste configurados.
+
+## Auditoria de cobertura OpenSpec — 7 de outubro de 2026
+
+Além do Agent, o sistema implementado inclui capacidades documentadas
+retroativamente em `openspec/specs/`: ciclo de conta e e-mail, workspace
+acadêmico, analytics e relatórios, Classroom, notificações e histórico, catálogo
+de integrações e runtime operacional. A matriz, as evidências e as divergências
+entre código e documentação estão em `OPENSPEC_COVERAGE_AUDIT_REPORT.md`.
+
+A suíte Node atual registra 69 testes aprovados e 1 teste opcional de Python
+ignorado quando `PYTHON_BIN` não está configurado. Typecheck e build passam; o
+lint completo mantém cinco erros e trinta e sete avisos preexistentes fora do
+escopo documental. Os executáveis `openspec` e Python não estão disponíveis no
+ambiente desta auditoria, portanto suas validações foram registradas como
+deferred e os artefatos foram revisados manualmente.
+
+## Correção do erro Groq — 7 de outubro de 2026
+
+O erro real de `Quais são minhas tarefas?` foi reproduzido com HTTP 503 público e
+diagnóstico server-side `providerStatus=400`. O Groq rejeitava a continuação do
+Tool Calling porque a mensagem Assistant interna não tinha `type=function` e o
+objeto `function`; em seguida, a investigação revelou rejeição de `status:null`
+no schema de `list_tasks` e de `additionalProperties:true` no Structured Output
+analítico estrito.
+
+`server/agent-provider.mjs` agora normaliza somente o wire Groq, ajusta o filtro
+nullable e usa JSON object mode com instrução do contrato para respostas dinâmicas.
+`server/agent-schemas.mjs` trata `status:null` como ausência de filtro. A
+validação backend continua sendo a autoridade final. Gemini não recebe essas
+transformações e não há fallback entre providers.
+
+O E2E autenticado real passou em instância isolada com `LLM_PROVIDER=groq`:
+cadastro, verificação, login e `/api/ai/chat` retornaram `200` para a pergunta
+reportada.

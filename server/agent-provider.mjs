@@ -44,6 +44,47 @@ function providerTools(tools = []) {
   return tools.map(tool => tool.type === 'function' ? tool : ({ type: 'function', function: { name: tool.name, description: tool.description, parameters: tool.parameters } }));
 }
 
+function groqTools(tools = []) {
+  return providerTools(tools).map(tool => {
+    if (tool.function.name !== 'list_tasks' || !tool.function.parameters?.properties?.status) return tool;
+    const parameters = tool.function.parameters;
+    return {
+      ...tool,
+      function: {
+        ...tool.function,
+        parameters: {
+          ...parameters,
+          properties: {
+            ...parameters.properties,
+            status: {
+              ...parameters.properties.status,
+              type: ['string', 'null'],
+              enum: [...(parameters.properties.status.enum || []), null],
+            },
+          },
+        },
+      },
+    };
+  });
+}
+
+function groqMessages(messages = []) {
+  return messages.map(message => {
+    if (message.role !== 'assistant' || !Array.isArray(message.tool_calls)) return message;
+    return {
+      ...message,
+      tool_calls: message.tool_calls.map(call => ({
+        id: call.id,
+        type: 'function',
+        function: {
+          name: call.name,
+          arguments: typeof call.arguments === 'string' ? call.arguments : JSON.stringify(call.arguments || {}),
+        },
+      })),
+    };
+  });
+}
+
 function geminiSchema(schema, options = {}) {
   if (!schema || typeof schema !== 'object' || Array.isArray(schema)) return schema;
   const result = {};
@@ -63,6 +104,18 @@ function geminiSchema(schema, options = {}) {
 function responseFormatBody(responseFormat) {
   if (!responseFormat) return undefined;
   return { type: 'json_schema', json_schema: { name: responseFormat.name, strict: true, schema: responseFormat.schema } };
+}
+
+function groqResponseMessages(messages, responseFormat) {
+  if (!responseFormat) return groqMessages(messages);
+  const instruction = `Retorne somente JSON válido conforme o contrato ${responseFormat.name}: ${JSON.stringify(responseFormat.schema)}`;
+  const systemIndex = messages.findIndex(message => message.role === 'system');
+  const normalized = systemIndex < 0 ? [{ role: 'system', content: instruction }, ...groqMessages(messages)] : groqMessages(messages).map((message, index) => index === systemIndex ? { ...message, content: `${message.content || ''}\n\n${instruction}` } : message);
+  return [...normalized, { role: 'user', content: 'A ferramenta já foi executada. Não chame nenhuma ferramenta. Retorne somente o JSON final solicitado.' }];
+}
+
+function groqResponseFormatBody(responseFormat) {
+  return responseFormat ? { type: 'json_object' } : undefined;
 }
 
 function parseJsonArguments(value) {
@@ -172,6 +225,36 @@ async function completeOpenRouter(config, transport, request) {
   throw lastError || new AgentProviderError('O Provider está indisponível.', 503, 'provider-unavailable', true);
 }
 
+async function completeGroq(config, transport, request) {
+  if (!config.apiKey) throw new AgentProviderError('O Provider do Agent não está configurado.', 503, 'provider-not-configured');
+  const model = request.model || config.model;
+  if (!model) throw new AgentProviderError('O modelo do Agent não está configurado.', 503, 'model-not-configured');
+  const body = { model, messages: groqResponseMessages(request.messages, request.responseFormat), temperature: request.temperature ?? 0.2, max_tokens: request.maxTokens ?? 1600 };
+  const tools = groqTools(request.tools);
+  if (tools.length) { body.tools = tools; body.tool_choice = request.toolChoice || 'auto'; }
+  if (request.responseFormat) body.response_format = groqResponseFormatBody(request.responseFormat);
+  let lastError;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const response = await transport.post(config.baseUrl + '/chat/completions', { 'Content-Type': 'application/json', Authorization: 'Bearer ' + config.apiKey }, body, config.timeoutMs);
+      if (response.status < 200 || response.status >= 300) {
+        const error = new AgentProviderError('O Provider não conseguiu responder.', response.status === 429 ? 429 : response.status >= 500 || response.status === 408 ? 503 : 503, 'provider-http-error', transientStatus(response.status));
+        error.providerStatus = response.status;
+        error.providerMessage = response.body?.error?.message;
+        error.providerCode = response.body?.error?.code;
+        if (!error.transient) throw error;
+        lastError = error;
+      } else return parseOpenRouterResponse(response.body, model);
+    } catch (error) {
+      const normalized = error instanceof AgentProviderError ? error : new AgentProviderError('O Provider não conseguiu responder.', 503, 'provider-network', true, error);
+      if (!normalized.transient) throw normalized;
+      lastError = normalized;
+    }
+    if (attempt === 0) await wait(50);
+  }
+  throw lastError || new AgentProviderError('O Provider está indisponível.', 503, 'provider-unavailable', true);
+}
+
 async function completeGemini(config, transport, request) {
   if (!config.apiKey) throw new AgentProviderError('O Provider do Agent não está configurado.', 503, 'provider-not-configured');
   const contents = geminiMessages(request.messages);
@@ -199,7 +282,16 @@ async function completeGemini(config, transport, request) {
   throw lastError || new AgentProviderError('O Provider está indisponível.', 503, 'provider-unavailable', true);
 }
 
+export function GroqProviderAdapter(config, transport = createFetchTransport()) {
+  return {
+    async complete(request) {
+      return completeGroq(config, transport, request);
+    },
+  };
+}
+
 export function createAgentProvider(config, transport = createFetchTransport()) {
+  if (config.provider === 'groq') return GroqProviderAdapter(config, transport);
   return {
     async complete(request) {
       if (config.provider === 'google-gemini') return completeGemini(config, transport, request);

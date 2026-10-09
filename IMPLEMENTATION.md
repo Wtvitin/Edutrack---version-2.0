@@ -26,3 +26,39 @@
 ## Provider vigente
 
 O fluxo normal usa `google-gemini` por default, `gemini-2.5-flash` e `GOOGLE_API_KEY` server-side. O adapter Gemini separa `systemInstruction`, converte Tools para function declarations, envia Structured Output quando solicitado e autentica com `x-goog-api-key` sem incluir a chave na URL. OpenRouter permanece somente como compatibilidade explicitamente selecionada e nÃ£o Ã© fallback automÃ¡tico.
+
+## Groq Provider
+
+`server/agent-provider.mjs` contém `GroqProviderAdapter` no mesmo factory do Gemini. A seleção `LLM_PROVIDER=groq` usa `GROQ_API_KEY` exclusivamente no header server-side e exige `GROQ_MODEL`; Gemini mantém `google-gemini` como default e não foi substituído.
+
+O adapter Groq reutiliza o transporte `fetch`, timeout, retry finito, mensagens OpenAI-compatíveis, Tools, Tool results e `response_format` JSON Schema. O Orchestrator continua sendo o único responsável por system prompt, Context Manager, Tool Registry, validação, autorização, ownership, Structured Output final e auditoria. Não houve alteração de banco, frontend, autenticação ou autorização.
+
+Os testes cobrem seleção, chave/modelo ausentes, Tool Calling, Structured Output sem Tools na mesma requisição, `429` com uma repetição, timeout, `401` sem repetição, ausência de fallback e auditoria `provider=groq`. O E2E real depende de credenciais Groq configuradas no ambiente.
+
+## Auditoria documental do sistema
+
+Em 7 de outubro de 2026 foi concluída uma auditoria retroativa das capacidades
+implementadas fora do Agent. Foram adicionadas especificações OpenSpec para
+contas/autenticação, workspace acadêmico, analytics/relatórios, Classroom,
+notificações/histórico, catálogo de integrações e runtime operacional. A spec
+canônica de Groq também foi adicionada a partir da change já concluída.
+
+Nenhum arquivo de código, teste, migration ou comportamento foi alterado. O
+relatório `OPENSPEC_COVERAGE_AUDIT_REPORT.md` contém a matriz, evidências,
+inconsistências históricas e limitações de validação do ambiente.
+
+## Correção do erro de resposta Groq
+
+O erro foi reproduzido no fluxo autenticado e não era ausência de credencial. O
+Groq retornava Tool Call, mas rejeitava a segunda requisição por formato de
+`assistant.tool_calls` incompleto; após a primeira correção, rejeitou o nullable
+`status` de `list_tasks` e o schema estrito com objetos dinâmicos.
+
+O adapter Groq passou a normalizar o formato externo sem alterar o contrato do
+Orchestrator, aceitar o filtro opcional nulo de forma controlada e solicitar
+`json_object` para Structured Output dinâmico. O backend continua validando
+`text`, `analysis` e `action` com os schemas existentes.
+
+Arquivos afetados: `server/agent-provider.mjs`, `server/agent-schemas.mjs`,
+`tests/agent-provider.test.mjs` e `tests/agent-tools.test.mjs`. Gemini, auth,
+ownership, Tool Registry, auditoria e frontend permanecem preservados.

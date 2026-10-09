@@ -5,6 +5,7 @@ import { openDatabase } from '../server/database.mjs';
 import { readAgentConfig } from '../server/agent-config.mjs';
 import { createAgentToolRegistry } from '../server/agent-tools.mjs';
 import { chatWithAgent } from '../server/agent-orchestrator.mjs';
+import { createAgentProvider } from '../server/agent-provider.mjs';
 
 async function fixture() {
   const db = await openDatabase({ directory: 'memory://', url: '' });
@@ -18,6 +19,39 @@ async function fixture() {
 function config() {
   return { ...readAgentConfig({ LLM_PROVIDER: 'google-gemini', LLM_MODEL: 'mock', LLM_TIMEOUT_MS: '1000' }), maxIterations: 3, maxHistory: 10 };
 }
+
+test('orchestrator preserva thoughtSignature ao retomar conversa Gemini apos Tool', async () => {
+  const { db, user } = await fixture();
+  const providerConfig = { ...config(), apiKey: 'gemini-test-key' };
+  const tools = createAgentToolRegistry({
+    readSnapshot: async () => ({ data: { subjects: [], tasks: [], sessions: [] } }),
+    analytics: async () => ({ days: 7, minutes: 0, previousMinutes: 105, activeDays: 0, sessions: 0, averageSession: 0, daily: [], subjects: [] }),
+  });
+  const finalContent = JSON.stringify({ type: 'analysis', analysis: 'Comparacao pronta.', metrics: { minutes: 0, previousMinutes: 105 } });
+  const firstRequests = [];
+  const firstResponses = [
+    { candidates: [{ content: { parts: [{ functionCall: { id: 'trend-call-1', name: 'get_study_trends', args: {} }, thoughtSignature: 'sig-trend-1' }] } }] },
+    { candidates: [{ content: { parts: [{ text: finalContent }] } }] },
+  ];
+  const firstProvider = createAgentProvider(providerConfig, { async post(url, headers, body) { firstRequests.push(body); return { status: 200, body: firstResponses.shift() }; } });
+  const first = await chatWithAgent({ db, user, message: 'Como esta meu desempenho?', config: providerConfig, provider: firstProvider, tools });
+  assert.equal(first.response.type, 'analysis');
+  const persistedCall = (await db.query('SELECT content FROM ai_messages WHERE conversation_id=$1 AND role=$2 ORDER BY created_at,id', [first.conversationId, 'ASSISTANT'])).rows.find(row => JSON.parse(row.content).toolCalls);
+  assert.equal(JSON.parse(persistedCall.content).toolCalls[0].thoughtSignature, 'sig-trend-1');
+
+  const secondRequests = [];
+  const secondProvider = createAgentProvider(providerConfig, { async post(url, headers, body) {
+    secondRequests.push(body);
+    const replayed = body.contents.find(message => message.role === 'model' && message.parts.some(part => part.functionCall));
+    assert.ok(replayed);
+    assert.equal(replayed.parts.find(part => part.functionCall)?.thoughtSignature, 'sig-trend-1');
+    return { status: 200, body: { candidates: [{ content: { parts: [{ text: finalContent }] } }] } };
+  } });
+  const second = await chatWithAgent({ db, user, conversationId: first.conversationId, message: 'faca uma comparacao entre as minhas duas ultimas semanas de estudo', config: providerConfig, provider: secondProvider, tools });
+  assert.equal(second.response.type, 'analysis');
+  assert.equal(secondRequests.length, 1);
+  assert.equal(firstRequests.length, 2);
+});
 
 test('orchestrator persiste conversa e resposta text', async () => {
   const { db, user } = await fixture();
@@ -65,4 +99,14 @@ test('conversationId de outra conta é isolado', async () => {
   const own = await chatWithAgent({ db: first.db, user: first.user, message: 'Oi', config: config(), provider, tools: createAgentToolRegistry({ analytics: async () => ({}) }) });
   const secondUser = { ...first.user, id: randomUUID() };
   await assert.rejects(() => chatWithAgent({ db: first.db, user: secondUser, message: 'Acesso', conversationId: own.conversationId, config: config(), provider, tools: createAgentToolRegistry({ analytics: async () => ({}) }) }), error => error.status === 404);
+});
+
+test('orchestrator audita Tool Groq sem alterar o registry', async () => {
+  const { db, user, subjectId } = await fixture();
+  let calls = 0;
+  const provider = { async complete() { calls += 1; return calls === 1 ? { model: 'openai/gpt-oss-20b', content: null, toolCalls: [{ id: 'groq-create-1', name: 'create_task', arguments: { subjectId, title: 'Revisar Groq' } }] } : { model: 'openai/gpt-oss-20b', content: JSON.stringify({ type: 'action', action: 'create_task', result: { ok: true } }) }; } };
+  const groqConfig = { ...readAgentConfig({ LLM_PROVIDER: 'groq', GROQ_API_KEY: 'server-only', GROQ_MODEL: 'openai/gpt-oss-20b', GROQ_TIMEOUT_MS: '1000' }), maxIterations: 3, maxHistory: 10 };
+  await chatWithAgent({ db, user, message: 'Crie uma tarefa', config: groqConfig, provider, tools: createAgentToolRegistry({ analytics: async () => ({}) }) });
+  const execution = (await db.query('SELECT provider,model,tool_name,status FROM ai_tool_executions WHERE user_id=$1', [user.id])).rows[0];
+  assert.deepEqual(execution, { provider: 'groq', model: 'openai/gpt-oss-20b', tool_name: 'create_task', status: 'SUCCESS' });
 });

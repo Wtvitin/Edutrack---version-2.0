@@ -1,5 +1,6 @@
 const DEFAULT_OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 const DEFAULT_GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
+const DEFAULT_GROQ_BASE_URL = 'https://api.groq.com/openai/v1';
 const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash';
 const DEFAULT_TIMEOUT_MS = 30000;
 const DEFAULT_MAX_MESSAGE_LENGTH = 4000;
@@ -23,21 +24,22 @@ function positiveInteger(value, fallback, minimum, maximum) {
 export function readAgentConfig(env = process.env) {
   const provider = String(env.LLM_PROVIDER || 'google-gemini').toLowerCase();
   const isGemini = provider === 'google-gemini' || provider === 'gemini';
+  const isGroq = provider === 'groq';
   const normalizedProvider = isGemini ? 'google-gemini' : provider;
-  const baseUrl = String(env.LLM_BASE_URL || (isGemini ? DEFAULT_GEMINI_BASE_URL : DEFAULT_OPENROUTER_BASE_URL)).replace(/\/+$/, '');
-  const fallbackModel = isGemini ? undefined : String(env.LLM_FALLBACK_MODEL || '').trim() || undefined;
+  const baseUrl = String(isGroq ? env.GROQ_BASE_URL || env.LLM_BASE_URL || DEFAULT_GROQ_BASE_URL : env.LLM_BASE_URL || (isGemini ? DEFAULT_GEMINI_BASE_URL : DEFAULT_OPENROUTER_BASE_URL)).replace(/\/+$/, '');
+  const fallbackModel = isGemini || isGroq ? undefined : String(env.LLM_FALLBACK_MODEL || '').trim() || undefined;
   return {
     provider: normalizedProvider,
-    model: String(env.LLM_MODEL || (isGemini ? DEFAULT_GEMINI_MODEL : '')).trim(),
+    model: String(isGroq ? env.GROQ_MODEL || '' : env.LLM_MODEL || (isGemini ? DEFAULT_GEMINI_MODEL : '')).trim(),
     fallbackModel: fallbackModel || undefined,
     baseUrl,
-    timeoutMs: positiveInteger(env.LLM_TIMEOUT_MS, DEFAULT_TIMEOUT_MS, 1000, 120000),
+    timeoutMs: positiveInteger(isGroq ? env.GROQ_TIMEOUT_MS || env.LLM_TIMEOUT_MS : env.LLM_TIMEOUT_MS, DEFAULT_TIMEOUT_MS, 1000, 120000),
     maxIterations: 3,
     maxHistory: positiveInteger(env.LLM_MAX_HISTORY, 24, 4, 50),
     maxMessageLength: positiveInteger(env.LLM_MAX_MESSAGE_LENGTH, DEFAULT_MAX_MESSAGE_LENGTH, 100, 12000),
     maxToolResultLength: positiveInteger(env.LLM_MAX_TOOL_RESULT_LENGTH, 12000, 1000, 50000),
     promptVersion: String(env.LLM_PROMPT_VERSION || 'v1-target'),
-    apiKey: String(env[isGemini ? 'GOOGLE_API_KEY' : 'OPENROUTER_API_KEY'] || '').trim() || undefined,
+    apiKey: String(env[isGemini ? 'GOOGLE_API_KEY' : isGroq ? 'GROQ_API_KEY' : 'OPENROUTER_API_KEY'] || '').trim() || undefined,
   };
 }
 

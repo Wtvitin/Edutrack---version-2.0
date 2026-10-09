@@ -18,6 +18,14 @@
 - **Date**: 2026-10-04
 - **Status**: active
 
+### AD-003
+- **Decision**: The Agent selects exactly one LLM provider at startup; Groq is an additional adapter, Gemini remains the default, and no automatic provider fallback exists.
+- **Reason**: This preserves deterministic execution, auditability, and backend authority while supporting APIs with distinct capabilities.
+- **Trade-off**: Each Groq deployment must explicitly configure a compatible key and model instead of inheriting an implicit default.
+- **Scope**: Agent configuration, provider layer, audit, and operational documentation.
+- **Date**: 2026-10-07
+- **Status**: active
+
 ## Handoff
 
 - **Feature**: agent-integration / `.specs/features/agent-integration`

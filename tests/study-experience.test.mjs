@@ -46,5 +46,20 @@ test('Python/Pandas e demonstração concordam sem alterar o Agent', {skip:!proc
   }
 });
 test('falha de Python não causa fallback silencioso nem chamadas à IA', async () => {
-  await assert.rejects(prepareReportAnalytics(fixture(),7,'all',{python:'edutrack-python-does-not-exist'}));
+  await assert.rejects(prepareReportAnalytics(fixture(),7,'all',{python:'edutrack-python-does-not-exist'}), error => error.code === 'reports-python-unavailable');
+});
+
+test('relatórios cobrem períodos, disciplina específica e conjunto vazio', {skip:!process.env.PYTHON_BIN}, async () => {
+  for (const days of [7,30,90]) {
+    const all = await prepareReportAnalytics(fixture(),days,'all',{today:'2026-10-01'});
+    assert.equal(all.days,days);
+    assert.equal(all.daily.length,days);
+    const subject = await prepareReportAnalytics(fixture(),days,'a',{today:'2026-10-01'});
+    assert.equal(subject.subjects.length,1);
+    assert.equal(subject.subjects[0].id,'a');
+  }
+  const empty = await prepareReportAnalytics({...fixture(),sessions:[],tasks:[]},7,'all',{today:'2026-10-01'});
+  assert.equal(empty.minutes,0);
+  assert.equal(empty.sessions,0);
+  assert.equal(empty.daily.length,7);
 });

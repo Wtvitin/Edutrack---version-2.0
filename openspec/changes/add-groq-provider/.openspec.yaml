@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-10-07
+goal: Adicionar Groq como provider LLM selecionável sem remover Google Gemini,
+  reutilizando o Agent, Tools, validações e auditoria existentes.

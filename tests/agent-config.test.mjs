@@ -27,6 +27,22 @@ test('agent config não carrega fallback OpenRouter quando Gemini é o provider'
   assert.equal(config.apiKey, 'server-only');
 });
 
+test('agent config seleciona Groq com credencial, modelo e timeout server-side', () => {
+  const config = readAgentConfig({ LLM_PROVIDER: 'groq', GROQ_API_KEY: 'server-only', GROQ_MODEL: 'openai/gpt-oss-20b', GROQ_BASE_URL: 'https://groq.test/openai/v1/', GROQ_TIMEOUT_MS: '45000', LLM_MODEL: 'gemini-2.5-flash' });
+  assert.equal(config.provider, 'groq');
+  assert.equal(config.apiKey, 'server-only');
+  assert.equal(config.model, 'openai/gpt-oss-20b');
+  assert.equal(config.baseUrl, 'https://groq.test/openai/v1');
+  assert.equal(config.timeoutMs, 45000);
+  assert.equal(config.fallbackModel, undefined);
+});
+
+test('agent config não usa modelo Gemini como fallback para Groq', () => {
+  const config = readAgentConfig({ LLM_PROVIDER: 'groq', GROQ_API_KEY: 'server-only', LLM_MODEL: 'gemini-2.5-flash' });
+  assert.equal(config.model, '');
+  assert.match(config.baseUrl, /api\.groq\.com\/openai\/v1/);
+});
+
 test('system prompt inclui data e somente disciplinas próprias', () => {
   const prompt = buildSystemPrompt({ date: '2026-10-04', subjects: [{ id: 'subject-1', name: 'Python' }] });
   assert.match(prompt, /2026-10-04/);

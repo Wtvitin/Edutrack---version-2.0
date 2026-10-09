@@ -20,3 +20,43 @@ Rate limiting distribuído, streaming, RAG/memória semântica, filas, Google Cl
 ## Provider Gemini — estado atual
 
 O runtime normal MUST usar `google-gemini` quando `LLM_PROVIDER` nÃ£o estiver definido. O modelo default Ã© `gemini-2.5-flash` e a credencial server-side Ã© `GOOGLE_API_KEY`. OpenRouter permanece somente como compatibilidade explÃ­cita quando `LLM_PROVIDER=openrouter`; ele nÃ£o Ã© fallback do Gemini. O E2E real depende de uma chave Gemini configurada no ambiente.
+
+## Groq Provider
+
+O sistema MUST suportar Groq como provider LLM opcional pelo adapter Groq dentro da camada de providers existente. A seleção MUST ser explícita: `LLM_PROVIDER=groq` usa Groq, enquanto `LLM_PROVIDER=google-gemini` e a ausência da variável preservam Google Gemini como runtime default.
+
+`GROQ_API_KEY` MUST permanecer somente no servidor. `GROQ_MODEL` MUST configurar o modelo Groq e não há modelo Groq hardcodeado pelo runtime. `GROQ_BASE_URL` e `GROQ_TIMEOUT_MS` podem configurar o endpoint e timeout do provider sem alterar Gemini.
+
+Groq MUST reutilizar o mesmo Agent Orchestrator, Context Manager, system prompt, Tool Registry, validação de argumentos, autorização, ownership, Structured Output e Frontend. Tool Calls Groq MUST seguir a validação backend existente e respostas estruturadas MUST continuar validadas antes de retornar ao cliente.
+
+O adapter Groq MUST aplicar retry finito somente para falhas transitórias, respeitar timeout e nunca trocar silenciosamente para Gemini, OpenRouter ou outro provider. A auditoria existente MUST identificar Tools Groq por `provider=groq` e modelo efetivo, sem registrar API key ou outros secrets.
+
+## Cobertura funcional retroativa
+
+As capacidades funcionais já implementadas fora do Agent são especificadas
+retroativamente nas capacidades OpenSpec `account-authentication`,
+`academic-study-management`, `analytics-reports`, `classroom-integration`,
+`notifications-history`, `integrations-catalog` e `runtime-operations`. Essas
+especificações descrevem o comportamento atual de contas, workspace acadêmico,
+relatórios, integração Classroom, lembretes, catálogo frontend e operação do
+servidor; não introduzem mudança de comportamento.
+
+O catálogo de integrações MUST distinguir Classroom disponível das demais
+integrações planejadas. Relatórios MUST usar somente dados autorizados e
+minimizados, e a demonstração MUST permanecer separada do banco e dos Providers.
+OAuth Classroom, tokens de conta e credenciais de e-mail MUST permanecer
+server-side. As especificações canônicas e a matriz de cobertura ficam
+registradas em `openspec/specs/` e `OPENSPEC_COVERAGE_AUDIT_REPORT.md`.
+
+## Correção do erro de resposta Groq
+
+O provider Groq MUST converter Tool Calls do contrato interno do Agent para o
+formato wire OpenAI-compatível antes de enviar a continuação da conversa. O
+filtro opcional de `list_tasks` MAY ser retornado pelo modelo como `null`, que
+representa ausência de filtro e continua sujeito à validação backend.
+
+Quando um contrato Structured Output contém objetos dinâmicos incompatíveis com
+o modo JSON Schema estrito do Groq, o adapter MUST solicitar JSON object mode e
+o Backend MUST continuar validando a resposta contra os schemas `text`,
+`analysis` e `action`. Gemini, Orchestrator, Tool Registry, autorização,
+ownership, auditoria e seleção explícita de provider MUST permanecer inalterados.

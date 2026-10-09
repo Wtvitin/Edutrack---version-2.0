@@ -127,7 +127,7 @@ export function createAPI(db,config) {
         if(![7,30,90].includes(days)||subject!=='all'&&!z.string().uuid().safeParse(subject).success)throw error('Filtro inválido.');
         const snapshot=await readData(db,user);
         if(subject!=='all'&&!snapshot.data.subjects.some(s=>s.id===subject))throw error('Disciplina não autorizada.',403);
-        try{respond(200,await prepareReportAnalytics(snapshot.data,days,subject));}catch{throw error('Não foi possível preparar o relatório. Confira Python/Pandas e tente novamente.',503);}
+        try{respond(200,await prepareReportAnalytics(snapshot.data,days,subject));}catch(cause){console.error('Reports analytics failed:',{code:cause.code,message:cause.message,python:cause.python,exitCode:cause.exitCode,stderr:cause.stderr,attempts:cause.attempts});throw error('Não foi possível preparar o relatório. Confira Python/Pandas e tente novamente.',503);}
       }
       else if(path==='/api/ai/chat'&&req.method==='POST'){
         const parsed=agentChatInputSchema.safeParse(input);

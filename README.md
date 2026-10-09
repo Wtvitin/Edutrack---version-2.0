@@ -11,7 +11,7 @@ npm ci
 python -m pip install -r analytics/requirements.txt
 ```
 
-Copie `.env.example` para `.env.local`. Se Python não estiver no PATH, informe o executável em `PYTHON_BIN`.
+Copie `.env.example` para `.env.local`. Se Python não estiver no PATH, informe o executável em `PYTHON_BIN`. No Windows, se o `python` padrão não tiver Pandas, o backend tenta o Python Launcher (`py -3`); também é possível configurar um comando com argumentos em `PYTHON_BIN`.
 
 ```sh
 npm run build

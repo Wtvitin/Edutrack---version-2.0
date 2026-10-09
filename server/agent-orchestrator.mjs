@@ -157,7 +157,7 @@ export async function chatWithAgent({ db, user, message, conversationId, config 
       await db.query('UPDATE ai_conversations SET updated_at=now() WHERE id=$1 AND user_id=$2', [currentConversationId, user.id]);
       return { conversationId: currentConversationId, response, metadata: { model: result.model || config.model, iterations, toolCalls: toolCallCount } };
     }
-    const assistantCallMessage = { content: result.content, toolCalls: calls.map(call => ({ id: call.id, name: call.name, arguments: redact(call.arguments) })) };
+    const assistantCallMessage = { content: result.content, toolCalls: calls.map(call => ({ id: call.id, name: call.name, arguments: redact(call.arguments), ...(typeof call.thoughtSignature === 'string' ? { thoughtSignature: call.thoughtSignature } : {}) })) };
     messages.push({ role: 'assistant', content: result.content || null, tool_calls: calls });
     await persistMessage(db, currentConversationId, 'ASSISTANT', JSON.stringify(assistantCallMessage));
     for (const rawCall of calls) {
