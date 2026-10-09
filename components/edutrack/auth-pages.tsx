@@ -15,10 +15,9 @@ function subscribeToLocation(onChange:()=>void){window.addEventListener('popstat
 const readToken=()=>new URLSearchParams(window.location.search).get('token')||'';
 const emptyToken=()=>'';
 export function AuthPage({page}:{page:string}){
-  const [visible,setVisible]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[success,setSuccess]=useState(false),[local,setLocal]=useState(false),[resend,setResend]=useState(false);
+  const [visible,setVisible]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[success,setSuccess]=useState(false),[resend,setResend]=useState(false);
   const token=useSyncExternalStore(subscribeToLocation,readToken,emptyToken);
   const content=info[page]||info.login;
-  useEffect(()=>{let active=true;void api<{localMailbox:boolean}>('/health').then(v=>{if(active)setLocal(v.localMailbox);}).catch(()=>{});return ()=>{active=false;};},[]);
   async function submit(e:FormEvent<HTMLFormElement>){
     e.preventDefault();const fields=Object.fromEntries(new FormData(e.currentTarget));setBusy(true);setMessage('');setSuccess(false);
     try{
@@ -31,7 +30,6 @@ export function AuthPage({page}:{page:string}){
     }catch(e){setMessage(e instanceof Error?e.message:'Não foi possível concluir.');}finally{setBusy(false);}
   }
   return <div className="auth-layout"><aside className="auth-story"><Brand/><div><span className="eyebrow">SEU ESPAÇO PARA IR ALÉM</span><h2>Pequenos passos.<br/>Grandes<br/><span>possibilidades.</span></h2><p>Organize seus estudos, encontre seu ritmo e abra espaço para o que vem pela frente.</p></div><span className="auth-tagline">Seu tempo. Seu ritmo. Seu futuro. <Sparkles size={17}/></span></aside><main className="auth-main"><Link className="back-link" href="/inicio"><ArrowLeft size={16}/>Voltar ao início</Link><div className="auth-card"><span className="eyebrow">BEM-VINDO AO EDUTRACK AI</span><h1>{resend?'Solicitar nova confirmação':content.title}</h1><p className="section-description">{content.description}</p>
-    {local&&<p className="demo-notice">Ambiente local: mensagens de teste ficam na <Link href="/emails-locais">caixa de e-mails local</Link>. Não são enviadas ao Gmail.</p>}
     <form className="edu-form" onSubmit={submit}>
       {page==='cadastro'&&<div className="field"><label htmlFor="auth-name">Seu nome</label><input id="auth-name" name="name" autoComplete="name" required maxLength={80}/></div>}
       {(!['nova-senha','verificar-email'].includes(page)||resend)&&<div className="field"><label htmlFor="auth-email">E-mail</label><input id="auth-email" name="email" type="email" autoComplete="email" required maxLength={254} placeholder="voce@gmail.com"/></div>}

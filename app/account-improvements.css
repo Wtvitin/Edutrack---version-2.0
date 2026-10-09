@@ -16,6 +16,26 @@
 .calendar-filter{display:flex;align-items:center;gap:24px;flex-wrap:wrap;margin-bottom:20px}.calendar-filter .field{min-width:210px}.priority-legend{font-size:.8rem;color:var(--muted-foreground)}.calendar-event.priority-urgente{background:#ffe0e7;color:#a32d4c;border-left:3px solid #ec4168}.calendar-event.priority-alta{background:#ffeddd;color:#9b4c11;border-left:3px solid #ec903d}.calendar-event.priority-normal{border-left:3px solid #8771e6}.calendar-event.priority-baixa{background:#e1f2e9;color:#237455;border-left:3px solid #51ac84}.dark .priority-urgente{background:#522438;color:#ffc4d4}.dark .priority-alta{background:#4b3424;color:#ffcea2}.dark .priority-baixa{background:#1e3d32;color:#b3e9cb}.dark .calendar-event.event-done,.calendar-event.event-done{opacity:.5}
 @media(max-width:1024px){.report-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.filter-row{flex-wrap:wrap}.filter-row .search-field{min-width:180px}}
 @media(max-width:767px){.topbar .demo-badge,.topbar-actions>.icon-button[aria-label="Buscar tarefas"],.topbar .profile-button>span:not(.avatar){display:none}.topbar-actions{gap:3px}.topbar{padding:0 10px}.topbar .icon-button{min-width:38px}.topbar .profile-button{gap:3px}.panel-heading{gap:10px;flex-wrap:wrap}.interactive-chart{height:220px}.report-stats{gap:10px}.report-stats>div{padding:14px}.report-stats strong{font-size:1.3rem}.report-table th,.report-table td{padding:12px 8px;white-space:nowrap}.notice-row{gap:10px}.edu-dialog{overflow-y:auto}.calendar-filter{gap:10px}.priority-legend{font-size:.75rem}.auth-main{padding:24px}.demo-notice{display:block}.demo-notice a{text-decoration:underline}.profile-intro{overflow-wrap:anywhere}}
+
+.dark .landing-preview .preview-window{background:var(--card);border-color:var(--border);color:var(--foreground)}
+.dark .landing-preview .preview-top{background:#151c2c;border-bottom-color:var(--border)}
+.dark .landing-preview .preview-top>span:not(.preview-title){background:#69758f}
+.dark .landing-preview .preview-title{color:var(--muted-foreground)}
+.dark .landing-preview .preview-body{background:var(--card);color:var(--foreground)}
+.dark .landing-preview .preview-greeting p{color:var(--muted-foreground)}
+.dark .landing-preview .preview-metrics>div{background:var(--secondary);border-color:var(--border);color:var(--foreground)}
+.dark .landing-preview .preview-metrics span,.dark .landing-preview .preview-task span{color:var(--muted-foreground)}
+.dark .landing-preview .preview-task{border-bottom-color:var(--border)}
+.dark .landing-preview .preview-checkbox{background:#322b50;color:#c8baff}
+.dark .landing-preview .preview-checkbox.empty{background:transparent;border-color:var(--input)}
+.dark .landing-preview .preview-focus{background:var(--secondary);border:1px solid var(--border)}
+.dark .landing-preview .floating-note{background:var(--card);border-color:var(--border);box-shadow:0 8px 40px #04071366}
+.dark .landing-preview .floating-note strong{color:var(--foreground)}
+.dark .landing-preview .floating-note span{color:var(--muted-foreground)}
+.dark .landing-preview .floating-note .metric-icon.green{color:#b3e9cb;background:#1e3d32}
+.dark .auth-divider>span{background:var(--card)}
+[data-sidebar=content]{-ms-overflow-style:none;scrollbar-width:none}
+[data-sidebar=content]::-webkit-scrollbar{width:0;height:0}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 @media print{.edu-sidebar,.topbar,.mobile-bottom,.app-footer,.no-print,.period-tabs,.analytics-panel>.field{display:none!important}.app-frame{width:100%}.main-content{padding:0!important}.dark{--card:#fff;--background:#fff;--foreground:#111;--muted-foreground:#444;--border:#ddd;--secondary:#eee}.panel{box-shadow:none;break-inside:avoid}.report-stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:767px){.topbar-actions>.icon-button[aria-label="Alternar modo claro/escuro"],.topbar-actions>.icon-button[aria-label="Abrir notificações"]{display:inline-flex}.topbar-divider{display:none}.task-copy{overflow-wrap:anywhere}.calendar-layout .task-row{flex-wrap:wrap}.calendar-layout .pill{display:inline-flex}}
@@ -44,3 +64,8 @@
 .dark .agent-error small,.dark .agent-error button{color:#e9a4b4}
 .dark .agent-chart{background:#171d2d;border-color:var(--border)}
 .dark .agent-chart-source{color:#9aa4ba}
+.faq-item{background:var(--card);color:var(--card-foreground);border-color:var(--border)}
+.faq-item:hover{border-color:var(--input)}
+.faq-item summary{color:var(--foreground)}
+.faq-item p{color:var(--muted-foreground)}
+.faq-item summary:focus-visible{outline:3px solid #9284ff;outline-offset:4px;border-radius:8px}
