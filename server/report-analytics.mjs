@@ -1,5 +1,6 @@
 import {spawn} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
+import {existsSync} from 'node:fs';
 
 // Separate from analytics.mjs: the existing Agent keeps its current implementation.
 const projectRoot = fileURLToPath(new URL('..', import.meta.url));
@@ -10,6 +11,9 @@ function splitCommand(value) {
 }
 
 function commandCandidates(configured) {
+  // PYTHON_BIN can be a literal executable path containing spaces, not a shell command.
+  const executable = String(configured || '').trim();
+  if (executable && existsSync(executable)) return [{file:executable,args:[]}];
   const parts = splitCommand(configured || 'python');
   const first = parts[0] || 'python';
   const configuredCommand = {file: first, args: parts.slice(1)};

@@ -49,6 +49,13 @@ test('falha de Python não causa fallback silencioso nem chamadas à IA', async 
   await assert.rejects(prepareReportAnalytics(fixture(),7,'all',{python:'edutrack-python-does-not-exist'}), error => error.code === 'reports-python-unavailable');
 });
 
+test('PYTHON_BIN aceita caminho literal e caminho entre aspas', {skip:!process.env.PYTHON_BIN}, async () => {
+  const python=process.env.PYTHON_BIN;
+  const literal=await prepareReportAnalytics(fixture(),7,'all',{python,today:'2026-10-01'});
+  const quoted=await prepareReportAnalytics(fixture(),7,'all',{python:`"${python}"`,today:'2026-10-01'});
+  assert.deepEqual(quoted,literal);
+});
+
 test('relatórios cobrem períodos, disciplina específica e conjunto vazio', {skip:!process.env.PYTHON_BIN}, async () => {
   for (const days of [7,30,90]) {
     const all = await prepareReportAnalytics(fixture(),days,'all',{today:'2026-10-01'});
