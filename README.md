@@ -1,83 +1,261 @@
 # EduTrack AI
 
-Aplicativo Web em português para disciplinas, tarefas, sessões de estudo e relatórios. Esta etapa acrescenta contas reais no servidor e mantém a demonstração separada.
+Aplicação web para organizar a rotina acadêmica em um só lugar: disciplinas, tarefas, sessões de estudo, calendário, notificações e relatórios de desempenho. O projeto também inclui um agente de IA autenticado e uma integração opcional, somente para leitura, com o Google Classroom.
 
-## Executar localmente — sem Docker
+> **Status:** projeto em desenvolvimento. A execução local é documentada; antes de uma publicação pública, ainda são necessárias etapas adicionais de segurança, operação e privacidade.
 
-Requer Node.js 22.15+ e Python com Pandas para os relatórios de contas.
+## Conteúdo
 
-```sh
+- [Visão geral](#visão-geral)
+- [Funcionalidades](#funcionalidades)
+- [Tecnologias](#tecnologias)
+- [Pré-requisitos](#pré-requisitos)
+- [Instalação e execução](#instalação-e-execução)
+- [Configuração](#configuração)
+- [Primeiro acesso](#primeiro-acesso)
+- [Agente de IA](#agente-de-ia)
+- [Integração com Google Classroom](#integração-com-google-classroom)
+- [Testes e validações](#testes-e-validações)
+- [Estrutura do projeto](#estrutura-do-projeto)
+- [Segurança e privacidade](#segurança-e-privacidade)
+- [Limitações conhecidas](#limitações-conhecidas)
+- [Documentação complementar](#documentação-complementar)
+
+## Visão geral
+
+O EduTrack AI combina planejamento acadêmico e acompanhamento do estudo com métricas calculadas a partir dos registros do usuário. A aplicação diferencia a demonstração local das contas reais: os exemplos da demonstração não são importados automaticamente para uma conta, e os dados de contas autenticadas ficam no banco gerenciado pelo servidor.
+
+A arquitetura segue este fluxo:
+
+```text
+Navegador
+   │
+   ▼
+Servidor Node.js / API
+   ├── Autenticação e autorização por conta
+   ├── PostgreSQL (PGlite local ou PostgreSQL convencional)
+   ├── Relatórios: Python + Pandas
+   ├── Agente de IA: provider configurado no servidor
+   └── Integração opcional com Google Classroom
+```
+
+O navegador e o agente não recebem uma conexão direta com o banco de dados. Para a instalação local, o projeto usa PGlite no processo de backend e não exige Docker. Também é possível apontar a aplicação para uma instância convencional de PostgreSQL por meio de `DATABASE_URL`.
+
+## Funcionalidades
+
+### Planejamento e acompanhamento acadêmico
+
+- Cadastro e gerenciamento de disciplinas e tarefas.
+- Tarefas com status, prioridade, dificuldade, prazo e estimativa de duração.
+- Dashboard com indicadores, filtros por período e disciplina, foco em atrasos e prioridades e acompanhamento da meta semanal.
+- Calendário com filtros, navegação por mês/agenda, tarefas com prazo e sessões de estudo registradas.
+- Cronômetro para sessões de estudo, com continuidade entre páginas no mesmo dispositivo.
+- Notificações internas de tarefas próximas ou atrasadas, com controle de leitura e preferências.
+- Histórico de criação e de alterações relevantes nas tarefas.
+- Preferências de perfil, tema claro/escuro/sistema e interface responsiva.
+
+### Relatórios e dados
+
+- Relatórios para períodos de 7, 30 ou 90 dias, com filtro por disciplina.
+- Comparação entre períodos equivalentes, distribuição de atividades, pendências, atrasos e carga estimada.
+- Gráficos interativos, exportação CSV e impressão ou salvamento em PDF pelo navegador.
+- Exportação dos registros da conta em JSON, sem incluir senhas ou tokens.
+- Processamento das métricas de contas autenticadas com Python e Pandas, recebendo apenas os dados necessários para os cálculos.
+
+### Contas e autenticação
+
+- Cadastro, login, confirmação de e-mail, reenvio de confirmação, recuperação de senha e logout.
+- Sessões mantidas por cookies `HttpOnly`.
+- Isolamento de dados por usuário e verificação de propriedade dos registros no backend.
+- Controle de concorrência para evitar que uma alteração de outra aba seja sobrescrita silenciosamente.
+
+### Agente de IA
+
+- Chat autenticado em `/agente`, usando `POST /api/ai/chat`.
+- Provider de modelo configurado no servidor, sem expor chaves de API ao frontend.
+- Tools permitidas explicitamente, com validação de argumentos, verificação de propriedade dos dados e auditoria das execuções.
+- Conversas e mensagens persistidas no backend.
+
+A disponibilidade do agente depende de configurar um provider e sua credencial. A demonstração `/demo` permanece separada e não envia seus exemplos locais a um modelo.
+
+### Integrações
+
+A página `/integracoes` apresenta um catálogo de integrações educacionais. Atualmente, o Google Classroom oferece conexão OAuth por conta e importação manual de atividades publicadas, após configuração e consentimento. Microsoft Teams for Education, Moodle, Canvas LMS, Notion e Google Agenda aparecem como opções planejadas; a presença no catálogo não significa que estejam conectados.
+
+## Tecnologias
+
+| Área | Tecnologias |
+| --- | --- |
+| Linguagem e runtime | TypeScript, JavaScript, Node.js 22+ |
+| Aplicação web | Next.js 16, React 19 |
+| Interface | Tailwind CSS, Radix/Shadcn, React Hook Form, Zod |
+| Gráficos e ícones | Recharts, Lucide React |
+| Persistência | PostgreSQL, PGlite e Drizzle ORM |
+| Análises | Python e Pandas |
+| E-mail | Nodemailer e SMTP opcional |
+| Testes | `node:test` e `unittest` para Python |
+
+As versões instaladas e os comandos disponíveis estão definidos em `package.json` e `package-lock.json`.
+
+## Pré-requisitos
+
+- Node.js **22.15 ou superior**.
+- npm, incluído com o Node.js.
+- Python 3 com suporte às dependências listadas em `analytics/requirements.txt` para os relatórios.
+- Acesso à internet para instalar dependências; uma conta/provedor de IA e credenciais Google só são necessários para habilitar essas integrações.
+
+Não é necessário instalar Docker ou um servidor PostgreSQL para a configuração local padrão.
+
+## Instalação e execução
+
+### 1. Clonar o repositório
+
+```bash
+git clone https://github.com/Wtvitin/Edutrack---version-2.0.git
+cd Edutrack---version-2.0
+```
+
+### 2. Instalar dependências
+
+```bash
 npm ci
 python -m pip install -r analytics/requirements.txt
 ```
 
-Copie `.env.example` para `.env.local`. Se Python não estiver no PATH, informe o executável em `PYTHON_BIN`. No Windows, se o `python` padrão não tiver Pandas, o backend tenta o Python Launcher (`py -3`); também é possível configurar um comando com argumentos em `PYTHON_BIN`.
+No Windows, se `python` não apontar para um interpretador com Pandas, use o Python Launcher (`py -3`) ou defina `PYTHON_BIN` com o caminho completo do executável que tem as dependências instaladas.
 
-```sh
+### 3. Criar o arquivo de ambiente
+
+No PowerShell:
+
+```powershell
+Copy-Item .env.example .env.local
+```
+
+No macOS/Linux:
+
+```bash
+cp .env.example .env.local
+```
+
+Revise os valores em `.env.local`. Não coloque credenciais reais no repositório.
+
+### 4. Compilar e iniciar
+
+Para compilar e executar a versão de produção local:
+
+```bash
 npm run build
 npm start
 ```
 
-Abra http://localhost:4173. Para desenvolvimento: `npm run dev` no mesmo endereço (a interface interna usa 4174).
+Abra **http://localhost:4173** no navegador.
 
-Nesta validação, o pipeline foi executado com Python 3.13/Pandas por meio de `PYTHON_BIN`. Se o Python padrão não tiver as dependências, informe o caminho completo do interpretador em `PYTHON_BIN`. Se o atalho npm falhar, use Node 22.15+ com `node --use-system-ca server/start.mjs` após compilar com `node scripts/run-framework.mjs build`.
+Para executar em modo de desenvolvimento:
 
-O banco PostgreSQL embutido roda EXCLUSIVAMENTE no backend, persiste em `.local/postgres` e não exige instalar PostgreSQL ou Docker. Para PostgreSQL convencional, configure `DATABASE_URL`. Não execute duas instâncias sobre a mesma pasta do banco.
+```bash
+npm run dev
+```
 
-## Catálogo de integrações
+O servidor de entrada usa a porta `4173` por padrão e encaminha as páginas para a interface interna, normalmente na porta `4174`. Use a URL de entrada da aplicação; a porta interna da interface não substitui a API autenticada.
 
-A aba **Integrações** (`/integracoes`) apresenta propostas para Google Classroom,
-Microsoft Teams for Education, Moodle, Canvas LMS, Notion e Google Agenda. Inclui
-busca, filtros por categoria e detalhes dos recursos propostos, com links para os
-sites oficiais. Funciona em modo claro/escuro e no menu móvel.
+> **Banco local:** os dados ficam em `.local/postgres`. Não inicie duas instâncias da aplicação apontando para a mesma pasta de dados. Antes de mover ou substituir a instalação, pare o servidor e faça backup do banco.
 
-O **Classroom agora possui conexão OAuth por conta e importação manual**,
-somente de leitura, após configuração no servidor e consentimento Google. Permite
-escolher turmas, sincronizar sem duplicar e desconectar, preservando alterações
-pessoais. Os outros cinco aplicativos continuam planejados. A demonstração não
-conecta contas. O agente de IA não foi alterado.
+## Configuração
 
-Configuração e limites: [Integrar Classroom](docs/integrar-classroom.md).
+O arquivo `.env.example` documenta as variáveis básicas. As principais são:
 
-Teste do catálogo: `node --test tests/integrations.test.mjs`.
+| Variável | Finalidade |
+| --- | --- |
+| `APP_ORIGIN` | Origem pública autorizada pela aplicação; padrão local `http://localhost:4173`. |
+| `PORT` | Porta do servidor de entrada; padrão `4173`. |
+| `UI_PORT` | Porta interna da interface; padrão `4174`. |
+| `MAIL_MODE` | `local` para testes sem envio externo ou `smtp` para configurar envio real. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM` | Configuração de e-mail quando SMTP estiver habilitado. |
+| `DATABASE_URL` | URL de um PostgreSQL convencional. Vazia, utiliza o banco PGlite embutido. |
+| `DATA_DIR` | Diretório do banco local; padrão `.local/postgres`. |
+| `PYTHON_BIN` | Executável Python usado pelo backend de análises. |
+
+### E-mail
+
+Por padrão, `MAIL_MODE=local` permite testar confirmação de e-mail e recuperação de senha sem enviar mensagens para fora da máquina. Para utilizar Gmail/SMTP, configure as variáveis SMTP e siga o [guia de configuração do Gmail](docs/configurar-gmail.md). Use uma senha de app quando exigida pelo provedor; nunca use ou publique a senha normal da sua conta Google.
+
+### PostgreSQL convencional
+
+Para usar um servidor PostgreSQL externo/local, configure `DATABASE_URL` em `.env.local`. Deixe-a vazia para usar o PGlite embutido. Mantenha credenciais e URLs de conexão fora do controle de versão.
+
+### Google Classroom
+
+A integração exige configurar um cliente OAuth de aplicação web no Google Cloud, habilitar a API do Classroom e cadastrar o callback correspondente à origem configurada:
+
+```text
+<APP_ORIGIN>/api/integrations/google/callback
+```
+
+Configure `GOOGLE_CLASSROOM_CREDENTIALS_FILE` para apontar para o arquivo de credenciais mantido fora do repositório. Em produção, a chave estável de criptografia dos tokens deve ser fornecida por `CLASSROOM_TOKEN_ENCRYPTION_KEY`. Consulte o [guia de integração](docs/integrar-classroom.md) para escopos, consentimento, proteção de tokens e limitações.
 
 ## Primeiro acesso
 
-1. Abra `/cadastro` e crie uma conta de teste.
-2. Com `MAIL_MODE=local`, abra `/emails-locais` e siga o link de confirmação. Nada é enviado externamente.
-3. Entre em `/login`. A confirmação é obrigatória.
-4. Para enviar pelo Gmail, siga [o guia de configuração](docs/configurar-gmail.md). Não coloque sua senha normal do Google no projeto.
-5. A recuperação de senha usa links de 30 minutos, de uso único, e encerra as sessões anteriores.
+1. Inicie a aplicação e abra [http://localhost:4173/cadastro](http://localhost:4173/cadastro).
+2. Crie uma conta de teste.
+3. Com `MAIL_MODE=local`, abra [http://localhost:4173/emails-locais](http://localhost:4173/emails-locais) e utilize o link de confirmação exibido.
+4. Acesse [http://localhost:4173/login](http://localhost:4173/login) e entre com a conta confirmada.
+5. Para conhecer a experiência com dados fictícios, abra `/demo`. Esses dados são independentes da conta real.
 
-A caixa local permite usar os links de qualquer conta de teste; não a exponha na rede. O servidor local está vinculado a 127.0.0.1.
+A confirmação de e-mail é obrigatória para entrar com uma nova conta. A caixa local de e-mails é exclusiva para testes e não deve ser exposta à rede.
 
-## Recursos desta etapa
+## Agente de IA
 
-- Autenticação, cadastro, confirmação, reenvio, recuperação, logout e sessões com cookies HttpOnly.
-- Dados separados por conta, validação da API, controle de concorrência e histórico de criação/alteração de tarefas.
-- Menu do usuário, perfil, tema claro/escuro/sistema e preferências persistentes.
-- Tarefas com quatro prioridades, status, dificuldade e estimativa de tempo.
-- Calendário com filtros e marcações por prioridade, sessões registradas no dia e atualização após alterações.
-- Notificações internas, marcação de leitura e controle de preferências. Atualizam ao abrir a área; não são push em segundo plano.
-- Gráficos interativos e relatórios por 7/30/90 dias e disciplina, comparação equivalente, distribuição, pendências, atrasos, carga estimada, CSV e impressão/PDF pelo navegador.
-- Python/Pandas prepara métricas de contas a partir de registros autorizados e minimizados. A demonstração calcula exemplos localmente.
-- Exportação JSON dos registros sem senhas ou tokens.
-- Interface responsiva, navegação acessível e respeito a movimento reduzido.
-- Modelo PostgreSQL com as 12 entidades da planilha: veja [o dicionário incorporado](docs/dicionario-de-dados.md).
+O agente real é acessado por uma conta autenticada em `/agente`. A escolha do provider e todas as credenciais são feitas no backend. Configure apenas **um provider por vez** por meio de `LLM_PROVIDER` e inclua a chave correspondente no arquivo de ambiente local.
 
-## Demonstração e contas
+### Google Gemini (padrão)
 
-`/demo` usa exemplos em `edutrack-demo-v1` no navegador. Eles NÃO são importados automaticamente para contas. Para usar sua conta após a demonstração, entre novamente em `/login`. O cronômetro é separado por conta/dispositivo e continua entre páginas. Não é sincronizado entre dispositivos.
+```dotenv
+LLM_PROVIDER=google-gemini
+LLM_MODEL=gemini-2.5-flash
+GOOGLE_API_KEY=sua_chave_aqui
+```
 
-Em Sessões de estudo, **Resetar** pede confirmação, descarta apenas o tempo da sessão atual e deixa o cronômetro parado em `00:00`. Mantém a disciplina selecionada e não altera os estudos já registrados. Para salvar o tempo, use **Concluir sessão** antes de resetar.
+Quando `LLM_PROVIDER` não é definido, o runtime usa Google Gemini por padrão.
 
-Nas contas, os registros ficam no banco do servidor. Trocar de dispositivo só acessa o mesmo banco se a API estiver disponível naquele dispositivo — localhost aponta para a própria máquina.
+### Groq (opcional)
 
-A sincronização desta etapa usa um snapshot com revisão otimista; alterações de outra aba geram conflito e não sobrescrevem silenciosamente. O Agent usa endpoint próprio, sessão autenticada e Tools com auditoria, não esse mecanismo de snapshot do frontend.
+```dotenv
+LLM_PROVIDER=groq
+GROQ_API_KEY=sua_chave_aqui
+GROQ_MODEL=nome_do_modelo_disponibilizado_na_sua_conta
+```
 
-## Verificações
+`GROQ_BASE_URL` e `GROQ_TIMEOUT_MS` podem ser definidos quando necessário. O modelo Groq deve ser configurado explicitamente; o provider não deve ser trocado silenciosamente em caso de falha.
 
-```sh
+### OpenRouter (compatibilidade explícita)
+
+```dotenv
+LLM_PROVIDER=openrouter
+OPENROUTER_API_KEY=sua_chave_aqui
+LLM_MODEL=nome_do_modelo_disponivel_no_openrouter
+```
+
+`LLM_FALLBACK_MODEL` e `LLM_TIMEOUT_MS` também podem ser configurados quando aplicáveis ao provider escolhido. Consulte `SPEC.md` e `server/` para as regras de execução atuais. Nunca coloque chaves de IA em variáveis públicas do frontend nem as envie em commits ou logs.
+
+O agente utiliza Tools registradas e validadas no servidor. A identidade é derivada da sessão autenticada, e os registros acessados devem pertencer à conta correspondente. O uso do agente pode transmitir ao provider configurado o conteúdo necessário para responder à solicitação; considere isso ao escolher o provider e os dados enviados.
+
+## Integração com Google Classroom
+
+Depois de configurar o OAuth e conectar a conta pela página `/integracoes`, o usuário pode selecionar até 20 turmas ativas e iniciar a importação manual das atividades publicadas disponíveis.
+
+- A integração é de leitura: não envia trabalhos, não lê notas e não modifica cursos ou atividades no Google Classroom.
+- A sincronização utiliza identificadores externos para evitar duplicações.
+- Alterações locais em campos protegidos pela edição do usuário são preservadas durante sincronizações subsequentes.
+- A desconexão revoga o acesso e remove os tokens locais, preservando os registros importados no EduTrack.
+
+O funcionamento real depende do consentimento, dos escopos e das credenciais OAuth configuradas; a tela de catálogo sozinha não conecta serviços.
+
+## Testes e validações
+
+Execute a partir da raiz do projeto:
+
+```bash
 npm run typecheck
 npm run lint
 npm test
@@ -85,131 +263,64 @@ python -m unittest discover -s analytics -p "test_*.py"
 npm run build
 ```
 
-Os testes cobrem confirmação, links de uso único, isolamento entre usuários, conflitos, histórico, recuperação, cálculos de período e Agent mockado. SMTP real depende da configuração e não foi validado com uma conta Gmail.
+Para testar especificamente a integração com o Classroom e o catálogo:
 
-## Agent de IA
-
-Contas autenticadas podem usar `/agente` para conversar com o Agent por `POST /api/ai/chat`. O backend mantém o Provider server-side, deriva a identidade da sessão HttpOnly, valida as oito Tools registradas, aplica ownership, persiste conversas/mensagens e audita Tool Calls. Configure `LLM_PROVIDER`, `LLM_MODEL`, `LLM_FALLBACK_MODEL`, `LLM_TIMEOUT_MS` e a chave correspondente no `.env.local`; nunca coloque essas chaves no frontend.
-
-O modo `/demo` permanece offline e não envia dados locais a um modelo. O Agent real depende de uma chave OpenRouter ou Google Gemini e do Python/Pandas quando uma Tool de analytics for usada. Rate limiting distribuído, streaming, RAG, filas e E2E dedicado continuam deferred.
-
-## Experiência de estudos — dashboard, calendário e relatórios
-
-- Dashboard: filtros de 7/30/90 dias e disciplina, cartões que filtram tarefas, foco por atraso/prioridade, detalhes de atividades e meta semanal.
-- Calendário: mês/agenda, filtros combinados, navegação por teclado, estudo registrado, pendências atrasadas de todos os meses e tarefas sem prazo.
-- Relatórios de conta: `GET /api/analytics` processa um snapshot autorizado e minimizado com `server/report-analytics.mjs` e Python/Pandas. Configure `PYTHON_BIN` e instale `analytics/requirements.txt`. Não há fallback silencioso para JavaScript ou IA.
-- Comparação de períodos, detalhes por dia/disciplina, pontualidade, prioridades, cobertura das estimativas e CSV protegido contra fórmulas. PDF usa a impressão do navegador.
-- Meta opcional de 0 a 10080 minutos, persistida pela migração aditiva `005_study_goal.sql`. Zero desativa a meta; o acompanhamento usa todas as disciplinas nos últimos sete dias.
-- A demonstração continua local; não envia dados ao modelo. A meta não é evidência de domínio de um assunto.
-- Os arquivos `server/agent-*`, `server/analytics.mjs` e `components/edutrack/agent-*` não foram alterados. O agente mantém o fluxo existente. A integração Classroom está documentada separadamente em `docs/integrar-classroom.md`.
-
-Validação adicional: `node --test tests/study-experience.test.mjs`; com `PYTHON_BIN` configurado, também confere paridade entre Python e os cálculos da demonstração. Testes Python: `python -m unittest discover -s analytics -p "test_*.py"`.
-
-### Pastas
-
-- `server/`: API, banco, autenticação, e-mail, analytics e servidor local.
-- `database/`: migrações derivadas do dicionário e extensões de contas.
-- `analytics/`: preparação determinística em Python/Pandas.
-- `components/edutrack/`: interface, formulários, navegação e comunicação com API.
-- `docs/data-dictionary.json`: transcrição técnica da planilha fornecida.
-- `docs/arquitetura.md`: implementação atual e sequência de evolução.
-
-Credenciais, banco local, logs e arquivos de ambiente não entram no Git. Faça backup de `.local/postgres` com o servidor parado antes de mover a instalação.
-
-## Ainda não conectado
-
-Teams, Moodle, Canvas, Notion, Google Agenda, push com app fechado e geração de relatórios em segundo plano. Classroom possui importação manual autorizada; sincronização automática ainda não foi implementada. O Agent de IA e suas Tools estão ativos para contas autenticadas quando o Provider server-side está configurado. Campos adicionais da disciplina (professor/período/carga horária) ainda não têm formulário.
-
-Antes de produção: revisão de segurança, política de dados/consentimento, backups, recuperação, filas confiáveis de e-mail, monitoramento, limites distribuídos e publicação HTTPS. A caixa local é recusada com NODE_ENV=production. O protótipo não deve ser anunciado como pronto para operação pública.
-
-React 19, TypeScript, Next.js oficial (App Router), Radix/Shadcn, Recharts e Lucide.
-
-## Runtime oficial do Next.js
-
-O frontend foi migrado de Vinext/Vite para Next.js 16.4.0. `npm run build`
-gera `.next`; `npm start` mantém a API Node e encaminha as telas ao `next start`
-interno. `npm run dev` usa `next dev` no mesmo fluxo. Não exige Docker.
-As portas são definidas em `.env.local` por `PORT`, `UI_PORT` e `APP_ORIGIN`;
-preserve o `APP_ORIGIN` autorizado no OAuth do Classroom. Nunca exponha a porta
-interna da interface como substituta da API: ela não fornece autenticação nem dados.
-
-O banco, os arquivos de ambiente, a chave de criptografia do Classroom e as
-credenciais de IA não mudaram. Após atualizar um clone existente, execute `npm ci`
-e `npm run build` antes de `npm start`. Pare o servidor antes de instalar dependências
-ou substituir o build; não inicie duas instâncias sobre `.local/postgres`.
-
-O lint usa plugins diretos de React, Hooks, TypeScript e acessibilidade, com zero
-avisos permitido. A antiga cadeia de `eslint-config-next`/Vinext que dependia de
-`braces` foi removida; não foi usada uma exceção de auditoria ou versão fictícia.
-
-A configuração Vite/Workers foi removida. Os exemplos D1, os tipos Cloudflare
-e os metadados herdados do starter não são o banco ou a hospedagem do EduTrack.
-Cloudflare/Sites exige um adaptador e uma estratégia de publicação próprios para
-Next.js, API Node e Python; os antigos artefatos `dist` não devem ser publicados.
-Esta migração valida a execução local em Node, não um novo deploy externo.
-
-Após `npm run build`, `npm run test:runtime` verifica 25 páginas, duas rotas 404,
-CSS/JavaScript e os fluxos da API em um banco descartável em memória. Configure
-`PYTHON_BIN` no terminal para a checagem de relatórios. Não chama Google nem IA
-externa e não utiliza `.local/postgres`. `node scripts/smoke-next.mjs --serve`
-mantém essa instância isolada em `http://127.0.0.1:4185` para testes no navegador;
-as credenciais fictícias são exibidas no terminal. Encerre com Ctrl+C.
-Acrescente `--dev` ao script para repetir a validação usando `next dev`.
-
-## Status automático das entregas do Classroom
-
-Após conectar o Google e importar as turmas escolhidas em **Integrações**, o
-EduTrack consulta suas entregas ao abrir uma página autenticada e a cada dois
-minutos enquanto a aba estiver visível. Ao voltar à aba, a consulta vencida é
-retomada. O servidor precisa estar rodando; não há monitoramento com o localhost
-desligado. Não é uma atualização instantânea nem usa Pub/Sub.
-
-O backend usa os mesmos escopos somente de leitura, consulta apenas as entregas
-do aluno (`userId=me`) nas turmas importadas, compartilha a requisição entre abas
-e mantém cache por dois minutos. Falhas têm espera progressiva de até 15 minutos.
-O último resultado é preservado e identificado como potencialmente desatualizado.
-
-Os indicadores aparecem nas tarefas e em seus detalhes, separados da conclusão
-local. **Concluir no EduTrack não entrega no Google; entregar no Google não
-marca automaticamente a tarefa local como concluída.** Devolução pelo professor,
-retirada de entrega e status desconhecido têm rótulos próprios. Novas atividades
-e alterações de enunciado/prazo continuam usando a importação manual existente.
-
-A migração `007_classroom_deliveries.sql` é aplicada no próximo início do backend.
-Ela adiciona somente campos de observação e não modifica conclusões ou revisões
-dos dados locais. O endpoint autenticado `POST /api/integrations/classroom/deliveries`
-aceita apenas `{}` e utiliza proteção de origem/CSRF e limitação de requisições.
-Não retorna tokens nem notas; não implementa escrita no Classroom.
-
-Para conferir a interface com dados fictícios, use
-`node scripts/smoke-next.mjs --serve --classroom` após o build e com `PYTHON_BIN`
-configurado. Essa opção usa banco em memória e transporte Google simulado.
-
-## Prioridades, prazos e lembretes no aplicativo
-
-A prioridade é a importância escolhida pelo usuário; o prazo determina a proximidade. As listas de tarefas, disciplinas, dashboard e calendário seguem a mesma regra determinística: **atrasadas → hoje/amanhã → em 2–3 dias → demais**. Dentro de cada grupo, **Urgente → Alta → Normal → Baixa**, depois prazo e título. Sem prazo, a tarefa fica no último grupo e continua respeitando a importância. A prioridade salva não muda automaticamente, e os relatórios continuam contando a importância escolhida.
-
-| Prioridade | Quando usar | Início do aviso antes do prazo |
-| --- | --- | --- |
-| Urgente | Precisa de atenção prioritária | 7 dias |
-| Alta | Importante; reservar tempo antes da rotina | 3 dias |
-| Normal | Rotina de estudos | 2 dias |
-| Baixa | Pode esperar dentro do mesmo grupo de prazo | 1 dia |
-
-Os avisos mostram **Entrega hoje**, **Entrega amanhã** ou **Entrega em N dias**. São dias de calendário em Brasília, não uma contagem de horas; no Classroom, consulte a origem para o horário exato. Os lembretes deixam de aparecer depois da data de entrega. Não há aviso para tarefas sem prazo, concluídas ou canceladas; a ordenação e os indicadores existentes de atraso continuam preservados.
-
-O sino mostra a quantidade não lida. A aba Notificações conserva um aviso por tarefa/prazo, atualiza a mensagem e preserva a leitura; mudar o prazo pode gerar um novo aviso. Concluir, cancelar, remover, adiar ou reduzir a prioridade retira os avisos que deixaram de ser elegíveis. As configurações permitem desativá-los. Marcar como lido não conclui a tarefa nem altera o Classroom.
-
-Atualização ao abrir o app, alterar tarefas, voltar à aba e a cada **60 segundos com a aba visível**. Não são e-mails, notificações push nem um serviço de fundo com o navegador fechado. A sinalização de prazo na tarefa é informativa, mesmo com lembretes desativados.
-
-Backend: `server/notifications.mjs`, `GET /api/notifications` e migração aditiva `database/008_deadline_reminders.sql` (`TASK_DEADLINE`; o tipo antigo é preservado para o histórico). Política compartilhada: `lib/task-attention.mjs`. A atualização dos avisos não modifica tarefas, revisões ou histórico. O Agent e os escopos/conexão do Classroom não mudaram.
-
-Teste visual isolado, somente dados fictícios em memória:
-
-```powershell
-node scripts/smoke-next.mjs --serve --classroom --deadlines
+```bash
+node --test tests/classroom.test.mjs tests/integrations.test.mjs
 ```
 
-## Agent e Google Gemini
+Os testes automatizados não substituem um teste com credenciais reais do provedor de e-mail, do modelo de IA ou do Google Classroom. A validação real dessas integrações depende da configuração externa.
 
-O Agent usa Google Gemini por default no servidor (`LLM_PROVIDER=google-gemini`, modelo `gemini-2.5-flash`) e lê `GOOGLE_API_KEY` somente do ambiente server-side. OpenRouter não é fallback automático; só é compatibilidade explícita quando `LLM_PROVIDER=openrouter` é configurado. Sem a chave Gemini, o endpoint protegido retorna erro controlado de provider não configurado.
+## Estrutura do projeto
+
+```text
+.
+├── app/                  # Páginas e rotas da aplicação Next.js
+├── components/           # Componentes de interface, incluindo os do EduTrack
+├── server/               # Servidor Node, API, autenticação, banco, IA e integrações
+├── database/             # Migrações SQL versionadas
+├── db/                   # Camada de acesso e definição do banco
+├── drizzle/              # Metadados de migrações Drizzle
+├── analytics/             # Preparação de métricas e testes Python/Pandas
+├── tests/                 # Testes automatizados da aplicação
+├── docs/                  # Arquitetura, guias e dicionário de dados
+├── openspec/              # Especificações de funcionalidades e mudanças
+├── public/                # Recursos estáticos
+├── scripts/               # Scripts de instalação e build
+├── SPEC.md                # Especificações técnicas do agente de IA
+├── context.md             # Contexto operacional do projeto
+├── package.json           # Dependências e scripts npm
+└── .env.example           # Modelo de configuração local
+```
+
+## Segurança e privacidade
+
+- Senhas são armazenadas como hashes; tokens de confirmação e recuperação têm uso limitado e expiração.
+- A API deriva a identidade da sessão e valida a propriedade dos registros no backend.
+- O processamento analítico de contas utiliza apenas os dados necessários aos cálculos; Python não acessa diretamente o banco.
+- O arquivo JSON exportado não inclui senhas ou tokens.
+- A demonstração usa dados locais fictícios e não envia seus exemplos ao modelo de IA.
+- Arquivos `.env*`, banco local, credenciais OAuth, chaves de IA e tokens não devem ser enviados ao Git.
+
+**Atenção:** a caixa `/emails-locais` expõe links úteis para contas de teste e deve permanecer restrita ao desenvolvimento local. O próprio projeto a recusa em modo de produção. Antes de disponibilizar o sistema publicamente, faça uma revisão de segurança e privacidade e configure HTTPS, backups testados, monitoramento, limites de requisição compartilhados e uma estratégia confiável para entrega de e-mails.
+
+## Limitações conhecidas
+
+- Teams, Moodle, Canvas, Notion e Google Agenda ainda são integrações planejadas.
+- As notificações atuais são internas e não funcionam como push em segundo plano com a aplicação fechada.
+- O Classroom usa sincronização manual; a sincronização automática ainda não está implementada.
+- O agente depende de uma credencial válida do provider configurado. Streaming, RAG/memória semântica, filas e rate limiting distribuído permanecem fora do escopo implementado descrito nas especificações atuais.
+- O projeto ainda não deve ser tratado como serviço pronto para operação pública sem as etapas adicionais de produção citadas acima.
+
+## Documentação complementar
+
+- [`docs/arquitetura.md`](docs/arquitetura.md) — arquitetura, API, segurança e regras de cálculo.
+- [`docs/integrar-classroom.md`](docs/integrar-classroom.md) — configuração e limites da integração com Google Classroom.
+- [`docs/configurar-gmail.md`](docs/configurar-gmail.md) — configuração de envio de e-mail via Gmail/SMTP.
+- [`docs/data-dictionary.json`](docs/data-dictionary.json) — dicionário de dados incorporado ao projeto.
+- [`SPEC.md`](SPEC.md) — contratos e invariantes do agente de IA.
+- [`openspec/`](openspec/) — especificações das funcionalidades e mudanças.
+
+---
+
+Desenvolvido como projeto de organização e acompanhamento acadêmico, com foco em separação de dados por conta, cálculos analíticos determinísticos e integrações controladas pelo backend.
