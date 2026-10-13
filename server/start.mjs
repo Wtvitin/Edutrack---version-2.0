@@ -4,6 +4,7 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { openDatabase } from './database.mjs';
 import { createAPI } from './api.mjs';
+import {connectUpgradeSockets} from './proxy-upgrade.mjs';
 if(existsSync('.env.local'))process.loadEnvFile('.env.local');
 if(existsSync('.env.classroom.local'))process.loadEnvFile('.env.classroom.local');
 const port=Number(process.env.PORT||4173),uiPort=Number(process.env.UI_PORT||4174);
@@ -27,7 +28,8 @@ const server=createServer(async(req,res)=>{
 });
 server.on('upgrade',(req,socket,head)=>{
   const proxy=request({hostname:'127.0.0.1',port:uiPort,path:req.url,headers:req.headers});
-  proxy.on('upgrade',(response,upstream,buffer)=>{socket.write(`HTTP/1.1 101 Switching Protocols\r\n${Object.entries(response.headers).map(([k,v])=>`${k}: ${v}`).join('\r\n')}\r\n\r\n`);upstream.write(head);socket.write(buffer);upstream.pipe(socket);socket.pipe(upstream);});proxy.on('error',()=>socket.destroy());proxy.end();
+  socket.on('error',()=>proxy.destroy());socket.on('close',()=>proxy.destroy());
+  proxy.on('upgrade',(response,upstream,buffer)=>connectUpgradeSockets(socket,upstream,head,buffer,response.headers));proxy.on('error',()=>socket.destroy());proxy.end();
 });
 server.listen(port,'127.0.0.1',()=>console.log(`EduTrack: ${origin} | e-mails: ${mailMode} | sem Docker`));
 async function close(){server.close();child.kill();await db.close();process.exit();}
